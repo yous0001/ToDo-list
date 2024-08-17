@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Roboto", sans-serif;
+}
+.container{
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(to left, #8e2de2, #4a00e0);
+    padding:10px; /*to avoid issue of connect container with todo list*/
+}
+
+.container .todo-app{
+    width: 100%;
+    max-width: 540px;/*to handdle responsive*/
+    background-color: white;
+    margin:100px auto 20px;/*100top 20bottom*/
+    padding: 40px 30px 70px;/*40top 70bottom 30rigth,left*/
+    border-radius: 10px;/*rounded*/
+}
+.todo-app h2{
+    color: #002765;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;/*center text with img*/
+}
+.todo-app img{
+    width:30px;
+    margin-left:10px;
+}
+.row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #edeef0;
+    border-radius: 30px;
+    padding-left:20px;
+    margin-bottom: 25px;
+}
+input{
+    flex: 1; /*flex-grow=1 | flex-basis=1*/
+    border: none;
+    outline: none;
+    background-color: transparent;
+    padding: 10px;
+}
+.row button{
+    border: none;
+    outline: none;
+    padding: 16px 50px;
+    background-color: #ff5945;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius:25px;
+}
