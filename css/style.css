@@ -57,3 +57,69 @@ input{
     cursor: pointer;
     border-radius:25px;
 }
+
+ul li{
+    list-style-type: none;
+    font-size: 18px;
+    padding: 12px 8px 12px 50px;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+ul li::before{
+    content: "";
+    position: absolute;
+    height: 28px;
+    width: 28px;
+    border-radius: 50%;
+    background-image: url(../imgs/unchecked.png);
+    background-size: cover;
+    background-position: center;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+}
+ul li.checked{
+    color: #555;
+    text-decoration:line-through;
+
+}
+ul li.checked::before{
+    background-image: url(../imgs/checked.png);
+}
+
+ul li span{
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    color: #555;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+ul li span:hover{
+    background-color: #edeef0;
+}
+
+.alert{
+    border:1px solid #ff4136;
+    background-color:#ff4136bb ;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    margin-block:20px;
+    display: none;
+}
+.alert p{
+    margin: 0;
+    color: white;
+}
+

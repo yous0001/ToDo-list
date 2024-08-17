@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ToDo-list</title>
-    <link rel="stylesheet" href="./css/all.min.css">
     <link rel="stylesheet" href="./css/style.css">
 </head>
 
@@ -13,10 +12,16 @@
     <div class="container">
         <div class="todo-app">
             <h2>TODO-List <img src="./imgs/notebook.png"></h2>
+            <div class="alert">
+                <p>You must write some thing</p>
+            </div>
             <div class="row">
                 <input type="text" id="input-box" placeholder="ADD your task">
-                <button>Add</button>
+                <button id="add-button">Add</button>
             </div>
+            <ul id="list-container">
+
+            </ul>
         </div>
     </div>
 
