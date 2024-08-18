@@ -1,7 +1,8 @@
 const inputBox=document.getElementById("input-box")
 const listContainer=document.getElementById("list-container")
 const addButton=document.getElementById("add-button")
-
+let addButtonFlag=true
+let updated;
 
 addButton.addEventListener('click',addTask)
 
@@ -18,7 +19,7 @@ function addTask(){
         document.getElementsByClassName("alert")[0].style.display="block"
 
     }
-    else{
+    else if(addButtonFlag===true){
         document.getElementsByClassName("alert")[0].style.display="none"
 
         let li =document.createElement("li")
@@ -36,6 +37,22 @@ function addTask(){
         inputBox.value=""
 
     }
+    else if(addButtonFlag===false){
+        updated.innerHTML=inputBox.value
+
+        let update =document.createElement("i")
+        update.classList.add("fa-solid","fa-pen")
+        updated.appendChild(update)
+
+        let span =document.createElement("span")
+        span.innerHTML="\u00d7"
+        updated.appendChild(span)
+
+        inputBox.value=""
+        addButtonFlag=true
+        addButton.innerText="ADD"
+        addButton.style.backgroundColor="#ff5945"
+    }
     saveData()
 }
 
@@ -50,6 +67,10 @@ listContainer.addEventListener('click',function(e){
     }
     else if(e.target.tagName==="I"){
         inputBox.value=e.target.parentElement.innerText.split("\u00d7")[0]
+        addButtonFlag=false
+        addButton.innerText="update"
+        addButton.style.backgroundColor="#2e6f40"
+        updated=e.target.parentElement
         // e.target.parentElement.remove()
         // saveData()
     }
