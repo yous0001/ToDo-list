@@ -158,6 +158,7 @@ export default function TimelinePage() {
   );
 
   const activeRange = RANGE_OPTIONS.find((option) => option.id === range);
+  const isYearView = range === "year";
 
   if (!user && !authLoading) {
     return (
@@ -240,6 +241,91 @@ export default function TimelinePage() {
           {timelineBuckets.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-200/80 bg-slate-50/80 p-8 text-center text-slate-500">
               Add tasks and start timers to build your timeline.
+            </div>
+          ) : isYearView ? (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {timelineBuckets.map((bucket) => {
+                const percent =
+                  maxFocus === 0
+                    ? 0
+                    : Math.round((bucket.focusSeconds / maxFocus) * 100);
+                const circumference = 2 * Math.PI * 32;
+                const offset =
+                  circumference - (circumference * Math.min(percent, 100)) / 100;
+                return (
+                  <div
+                    key={`${bucket.label}-${bucket.rangeStart}`}
+                    className="rounded-[26px] border border-slate-200/80 bg-white/95 p-5 shadow-sm transition hover:shadow-lg"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                          {bucket.subLabel}
+                        </p>
+                        <h3 className="text-2xl font-semibold text-slate-900">
+                          {bucket.label}
+                        </h3>
+                      </div>
+                      <div className="relative h-20 w-20">
+                        <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90">
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="32"
+                            stroke="#e2e8f0"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          <circle
+                            cx="40"
+                            cy="40"
+                            r="32"
+                            stroke="url(#timelineRing)"
+                            strokeWidth="8"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={offset}
+                            fill="none"
+                          />
+                          <defs>
+                            <linearGradient
+                              id="timelineRing"
+                              x1="0%"
+                              y1="0%"
+                              x2="100%"
+                              y2="100%"
+                            >
+                              <stop offset="0%" stopColor="#6366f1" />
+                              <stop offset="100%" stopColor="#ec4899" />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-slate-900">
+                          {percent}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-2 text-sm text-slate-600">
+                      <div className="flex items-center justify-between rounded-2xl bg-slate-100 px-3 py-2">
+                        <span>Focus time</span>
+                        <span className="font-semibold text-slate-900">
+                          {formatDuration(bucket.focusSeconds)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50/80 px-3 py-2 text-emerald-800">
+                        <span>Completed</span>
+                        <span className="font-semibold">
+                          {bucket.completed}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between rounded-2xl border border-amber-200 bg-amber-50/80 px-3 py-2 text-amber-800">
+                        <span>Started</span>
+                        <span className="font-semibold">{bucket.started}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <ul className="mt-6 space-y-4">
