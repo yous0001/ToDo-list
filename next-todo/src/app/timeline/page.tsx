@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { SummaryPanel } from "@/components/summary-panel";
 import { useTaskManager } from "@/hooks/use-task-manager";
@@ -25,6 +25,15 @@ type TimelineBucket = {
   focusSeconds: number;
 };
 
+type MonthCell = {
+  key: string;
+  bucket: TimelineBucket;
+  dayLabel: string;
+  weekdayLabel: string;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+};
+
 const RANGE_OPTIONS: Array<{
   id: TimelineRange;
   label: string;
@@ -35,7 +44,7 @@ const RANGE_OPTIONS: Array<{
   { id: "year", label: "Year", detail: "12 months" },
 ];
 
-const WEEK_IN_MS = 7 * DAY_IN_MS;
+const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const formatShortDate = (timestamp: number) =>
   new Date(timestamp).toLocaleDateString("en-US", {
@@ -56,8 +65,8 @@ export default function TimelinePage() {
 
   const startOfToday = useMemo(() => getStartOfToday(), []);
 
-  const timelineBuckets = useMemo(() => {
-    const aggregateRange = (
+  const aggregateRange = useCallback(
+    (
       label: string,
       subLabel: string,
       rangeStart: number,
@@ -94,18 +103,29 @@ export default function TimelinePage() {
         completed,
         focusSeconds,
       };
-    };
+    },
+    [tasks]
+  );
 
+  const timelineBuckets = useMemo(() => {
     if (range === "month") {
-      const base = startOfToday - 4 * WEEK_IN_MS;
-      return Array.from({ length: 4 }, (_, index) => {
-        const rangeStart = base + index * WEEK_IN_MS;
-        const rangeEnd = rangeStart + WEEK_IN_MS;
-        const label = `Week ${index + 1}`;
-        const subLabel = `${formatShortDate(rangeStart)} – ${formatShortDate(
-          rangeEnd - DAY_IN_MS
-        )}`;
-        return aggregateRange(label, subLabel, rangeStart, rangeEnd);
+      const current = new Date(startOfToday);
+      current.setDate(1);
+      current.setHours(0, 0, 0, 0);
+      const monthStart = current.getTime();
+      const nextMonth = new Date(current);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      const monthEnd = nextMonth.getTime();
+      const daysInMonth = Math.round(
+        (monthEnd - monthStart) / DAY_IN_MS
+      );
+      return Array.from({ length: daysInMonth }, (_, index) => {
+        const rangeStart = monthStart + index * DAY_IN_MS;
+        const label = new Date(rangeStart).getDate().toString();
+        const subLabel = new Date(rangeStart).toLocaleDateString("en-US", {
+          weekday: "short",
+        });
+        return aggregateRange(label, subLabel, rangeStart, rangeStart + DAY_IN_MS);
       });
     }
 
@@ -133,7 +153,85 @@ export default function TimelinePage() {
       });
       return aggregateRange(label, subLabel, dayStart, dayStart + DAY_IN_MS);
     });
-  }, [tasks, range, startOfToday]);
+  }, [range, startOfToday, aggregateRange]);
+
+  const isYearView = range === "year";
+  const isMonthView = range === "month";
+
+  const monthView = useMemo(() => {
+    if (!isMonthView) {
+      return null;
+    }
+    const today = new Date(startOfToday);
+    const monthStartDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    monthStartDate.setHours(0, 0, 0, 0);
+    const nextMonthStart = new Date(monthStartDate);
+    nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+    const monthLabel = monthStartDate.toLocaleDateString("en-US", {
+      month: "long",
+      year: "numeric",
+    });
+    const firstWeekday = monthStartDate.getDay();
+    const cells: MonthCell[] = [];
+
+    const makeCell = (
+      date: Date,
+      bucket: TimelineBucket,
+      isCurrentMonth: boolean
+    ) => {
+      const dayStart = date.getTime();
+      const isToday =
+        dayStart <= startOfToday && startOfToday < dayStart + DAY_IN_MS;
+      cells.push({
+        key: `${isCurrentMonth ? "cur" : "pad"}-${dayStart}`,
+        bucket,
+        dayLabel: date.getDate().toString(),
+        weekdayLabel: date.toLocaleDateString("en-US", { weekday: "short" }),
+        isCurrentMonth,
+        isToday,
+      });
+    };
+
+    for (let i = firstWeekday; i > 0; i -= 1) {
+      const date = new Date(monthStartDate);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      const rangeStart = date.getTime();
+      const bucket = aggregateRange(
+        date.getDate().toString(),
+        date.toLocaleDateString("en-US", { weekday: "short" }),
+        rangeStart,
+        rangeStart + DAY_IN_MS
+      );
+      makeCell(date, bucket, false);
+    }
+
+    timelineBuckets.forEach((bucket) => {
+      const date = new Date(bucket.rangeStart);
+      makeCell(date, bucket, true);
+    });
+
+    const totalCells = cells.length;
+    const trailing = (7 - (totalCells % 7)) % 7;
+    for (let i = 0; i < trailing; i += 1) {
+      const date = new Date(nextMonthStart);
+      date.setDate(nextMonthStart.getDate() + i);
+      date.setHours(0, 0, 0, 0);
+      const rangeStart = date.getTime();
+      const bucket = aggregateRange(
+        date.getDate().toString(),
+        date.toLocaleDateString("en-US", { weekday: "short" }),
+        rangeStart,
+        rangeStart + DAY_IN_MS
+      );
+      makeCell(date, bucket, false);
+    }
+
+    return {
+      label: monthLabel,
+      cells,
+    };
+  }, [aggregateRange, isMonthView, startOfToday, timelineBuckets]);
 
   const totals = useMemo(
     () =>
@@ -158,7 +256,6 @@ export default function TimelinePage() {
   );
 
   const activeRange = RANGE_OPTIONS.find((option) => option.id === range);
-  const isYearView = range === "year";
 
   if (!user && !authLoading) {
     return (
@@ -330,6 +427,104 @@ export default function TimelinePage() {
                   </div>
                 );
               })}
+            </div>
+          ) : isMonthView && monthView ? (
+            <div className="mt-6 space-y-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                    Current month
+                  </p>
+                  <h3 className="text-2xl font-semibold text-slate-900">
+                    {monthView.label}
+                  </h3>
+                </div>
+                <p className="text-sm text-slate-500">
+                  Each cell shows focus, completed tasks, and starts for the day.
+                </p>
+              </div>
+              <div className="overflow-x-auto pb-2">
+                <div className="min-w-[720px]">
+                  <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+                    {WEEKDAY_LABELS.map((day) => (
+                      <span key={day}>{day}</span>
+                    ))}
+                  </div>
+                  <div className="mt-2 grid grid-cols-7 gap-2">
+                    {monthView.cells.map((cell) => {
+                      const { bucket } = cell;
+                      const focusPercent =
+                        maxFocus === 0
+                          ? 0
+                          : Math.min(
+                              100,
+                              Math.round((bucket.focusSeconds / maxFocus) * 100)
+                            );
+                      const hasActivity =
+                        bucket.focusSeconds > 0 ||
+                        bucket.started > 0 ||
+                        bucket.completed > 0;
+                      return (
+                        <div
+                          key={cell.key}
+                          className={`min-h-[120px] rounded-2xl border p-3 text-left transition ${
+                            cell.isCurrentMonth
+                              ? "border-slate-200 bg-white"
+                              : "border-dashed border-slate-200/70 bg-slate-50/80 text-slate-400"
+                          } ${
+                            cell.isToday
+                              ? "ring-2 ring-indigo-500/60 ring-offset-2"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-xs font-semibold">
+                            <span
+                              className={`text-base ${
+                                cell.isCurrentMonth
+                                  ? "text-slate-900"
+                                  : "text-slate-400"
+                              }`}
+                            >
+                              {cell.dayLabel}
+                            </span>
+                            <span className="text-[0.65rem] uppercase tracking-[0.35em] text-slate-400">
+                              {cell.weekdayLabel}
+                            </span>
+                          </div>
+                          {hasActivity ? (
+                            <div className="mt-3 space-y-2 text-[0.75rem] text-slate-500">
+                              <div className="flex items-center justify-between text-xs text-slate-500">
+                                <span>Focus</span>
+                                <span className="font-semibold text-slate-900">
+                                  {formatDuration(bucket.focusSeconds)}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1 text-[0.7rem]">
+                                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
+                                  {bucket.completed} ✔
+                                </span>
+                                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 font-semibold text-amber-700">
+                                  {bucket.started} ↺
+                                </span>
+                              </div>
+                              <div className="h-2 rounded-full bg-slate-100">
+                                <div
+                                  className={`h-2 rounded-full bg-gradient-to-r ${theme.accent}`}
+                                  style={{ width: `${focusPercent}%` }}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="mt-6 text-[0.7rem] text-slate-400">
+                              No activity
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <ul className="mt-6 space-y-4">
