@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import Link from "next/link";
 
 import { TaskCard } from "@/components/task-card";
 import { TaskComposerModal } from "@/components/task-composer-modal";
@@ -217,17 +216,15 @@ export default function TasksPage() {
     <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
         <header className="text-center text-white">
-          <Link
-            href="/"
-            className="inline-block text-sm uppercase tracking-[0.4em] text-white/80 hover:text-white"
-          >
-            ← Back to home
-          </Link>
+          <p className="text-sm uppercase tracking-[0.4em] text-white/80">
+            Task cockpit
+          </p>
           <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
             Task Manager
           </h1>
           <p className="mt-4 text-base text-white/80 sm:text-lg">
-            Track all your tasks with timers and detailed information
+            Track all your tasks with timers, precise schedules, and rich
+            descriptions.
           </p>
         </header>
 

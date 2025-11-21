@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 
 import { SummaryPanel } from "@/components/summary-panel";
 import { useTaskManager } from "@/hooks/use-task-manager";
@@ -144,12 +143,9 @@ export default function DashboardPage() {
     <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
         <header className="text-center text-white">
-          <Link
-            href="/"
-            className="inline-block text-sm uppercase tracking-[0.4em] text-white/80 hover:text-white"
-          >
-            ← Back to home
-          </Link>
+          <p className="text-sm uppercase tracking-[0.4em] text-white/80">
+            Insight control
+          </p>
           <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
             Dashboard
           </h1>
