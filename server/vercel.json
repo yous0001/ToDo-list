@@ -14,18 +14,5 @@
       "src": "/(.*)",
       "dest": "/src/index.ts"
     }
-  ],
-  "env": {
-    "PORT": "4000",
-    "MONGODB_URI": "@mongo_uri",
-    "MONGODB_DB_NAME": "@mongo_db_name",
-    "JWT_SECRET": "@jwt_secret",
-    "APP_BASE_URL": "@app_base_url",
-    "MAIL_FROM": "@mail_from",
-    "MAIL_HOST": "@mail_host",
-    "MAIL_PORT": "@mail_port",
-    "MAIL_USER": "@mail_user",
-    "MAIL_PASS": "@mail_pass",
-    "CORS_ORIGIN": "@cors_origin"
-  }
+  ]
 }

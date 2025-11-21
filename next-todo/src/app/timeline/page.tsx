@@ -251,7 +251,8 @@ export default function TimelinePage() {
                     : Math.round((bucket.focusSeconds / maxFocus) * 100);
                 const circumference = 2 * Math.PI * 32;
                 const offset =
-                  circumference - (circumference * Math.min(percent, 100)) / 100;
+                  circumference -
+                  (circumference * Math.min(percent, 100)) / 100;
                 return (
                   <div
                     key={`${bucket.label}-${bucket.rangeStart}`}
@@ -267,7 +268,10 @@ export default function TimelinePage() {
                         </h3>
                       </div>
                       <div className="relative h-20 w-20">
-                        <svg viewBox="0 0 80 80" className="h-20 w-20 -rotate-90">
+                        <svg
+                          viewBox="0 0 80 80"
+                          className="h-20 w-20 -rotate-90"
+                        >
                           <circle
                             cx="40"
                             cy="40"
@@ -379,5 +383,3 @@ export default function TimelinePage() {
     </div>
   );
 }
-
-
