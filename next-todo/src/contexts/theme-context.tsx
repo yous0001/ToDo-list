@@ -26,8 +26,7 @@ const THEME_OPTIONS: ThemeOption[] = [
     id: "aurora",
     label: "Aurora Glow",
     shortLabel: "Aurora",
-    background:
-      "bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#1e1b4b]",
+    background: "bg-gradient-to-br from-[#020617] via-[#0f172a] to-[#1e1b4b]",
     overlay:
       "bg-[radial-gradient(circle_at_top,_rgba(79,70,229,0.45),_transparent_55%)]",
     accent: "from-indigo-500 via-purple-500 to-pink-500",
@@ -38,8 +37,7 @@ const THEME_OPTIONS: ThemeOption[] = [
     id: "dawn",
     label: "Dawn Rise",
     shortLabel: "Dawn",
-    background:
-      "bg-gradient-to-br from-[#2a0f27] via-[#7c2d12] to-[#92400e]",
+    background: "bg-gradient-to-br from-[#2a0f27] via-[#7c2d12] to-[#92400e]",
     overlay:
       "bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.4),_transparent_55%)]",
     accent: "from-orange-500 via-amber-500 to-rose-500",
@@ -50,8 +48,7 @@ const THEME_OPTIONS: ThemeOption[] = [
     id: "ocean",
     label: "Ocean Mist",
     shortLabel: "Lagoon",
-    background:
-      "bg-gradient-to-br from-[#0f172a] via-[#0f766e] to-[#134e4a]",
+    background: "bg-gradient-to-br from-[#0f172a] via-[#0f766e] to-[#134e4a]",
     overlay:
       "bg-[radial-gradient(circle_at_top,_rgba(6,182,212,0.35),_transparent_50%)]",
     accent: "from-cyan-400 via-sky-500 to-emerald-400",
@@ -62,8 +59,7 @@ const THEME_OPTIONS: ThemeOption[] = [
     id: "noir",
     label: "Noir Focus",
     shortLabel: "Noir",
-    background:
-      "bg-gradient-to-br from-[#020617] via-[#111827] to-[#0f172a]",
+    background: "bg-gradient-to-br from-[#020617] via-[#111827] to-[#0f172a]",
     overlay:
       "bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.25),_transparent_55%)]",
     accent: "from-slate-100 via-slate-300 to-white",
@@ -109,8 +105,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(() => {
     const theme =
-      THEME_OPTIONS.find((option) => option.id === themeId) ??
-      THEME_OPTIONS[0];
+      THEME_OPTIONS.find((option) => option.id === themeId) ?? THEME_OPTIONS[0];
     return {
       theme,
       themeId: theme.id,
@@ -131,4 +126,3 @@ export const useTheme = () => {
   }
   return context;
 };
-

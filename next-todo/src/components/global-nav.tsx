@@ -36,7 +36,7 @@ export const GlobalNav = () => {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-white/15 ${theme.nav} backdrop-blur-xl`}
+      className={`sticky top-0 z-30 border-b border-white/15 ${theme.nav} backdrop-blur-xl`}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:flex-wrap md:items-center">
         <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
