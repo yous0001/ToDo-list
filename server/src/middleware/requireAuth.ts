@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 
 import { env } from "../config/env";
 
@@ -29,6 +29,11 @@ export const requireAuth = (
   }
 };
 
-export const signAuthToken = (payload: TokenPayload, expiresIn = "7d") =>
-  jwt.sign(payload, env.jwtSecret, { expiresIn });
+const jwtSecret: Secret = env.jwtSecret;
+type ExpiresIn = SignOptions["expiresIn"];
+
+export const signAuthToken = (
+  payload: TokenPayload,
+  expiresIn: ExpiresIn = "7d"
+) => jwt.sign(payload, jwtSecret, { expiresIn });
 
