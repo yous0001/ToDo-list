@@ -340,19 +340,33 @@ export default function TasksPage() {
                   SEARCH
                 </span>
               </div>
-              <select
-                value={sortBy}
-                onChange={(event) =>
-                  setSortBy(event.target.value as SortOptionId)
-                }
-                className="rounded-2xl border border-white/40 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    Sort: {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <select
+                  value={sortBy}
+                  onChange={(event) =>
+                    setSortBy(event.target.value as SortOptionId)
+                  }
+                  className="rounded-2xl border border-white/40 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      Sort: {option.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={collectionFilter}
+                  onChange={(event) => setCollectionFilter(event.target.value)}
+                  className="rounded-2xl border border-white/40 bg-white/90 px-4 py-2 text-sm font-semibold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="all">All collections</option>
+                  {collections.map((collection) => (
+                    <option key={collection.id} value={collection.id}>
+                      {collection.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -415,6 +429,16 @@ export default function TasksPage() {
                   key={task.id}
                   task={task}
                   seconds={seconds}
+                  collectionName={
+                    task.collectionId
+                      ? mapById.get(task.collectionId)?.name ?? null
+                      : null
+                  }
+                  collectionColor={
+                    task.collectionId
+                      ? mapById.get(task.collectionId)?.color ?? null
+                      : null
+                  }
                   onToggleComplete={toggleComplete}
                   onStart={startTimer}
                   onPause={pauseTimer}
@@ -437,6 +461,8 @@ export default function TasksPage() {
         startDate={startDate}
         dueDate={dueDate}
         dueToday={dueToday}
+        collectionId={selectedCollectionId}
+        collections={collections}
         onSubmit={handleSubmit}
         onClose={closeComposer}
         onCancelEdit={closeComposer}
@@ -445,6 +471,7 @@ export default function TasksPage() {
         onStartDateChange={setStartDate}
         onDueDateChange={setDueDate}
         onDueTodayChange={setDueToday}
+        onCollectionChange={setSelectedCollectionId}
       />
 
       <button

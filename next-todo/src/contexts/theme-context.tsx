@@ -82,19 +82,19 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "smart-todo-theme";
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [themeId, setThemeId] = useState<string>(THEME_OPTIONS[0].id);
+const getStoredThemeId = () => {
+  if (typeof window === "undefined") {
+    return THEME_OPTIONS[0].id;
+  }
+  try {
+    return localStorage.getItem(STORAGE_KEY) ?? THEME_OPTIONS[0].id;
+  } catch {
+    return THEME_OPTIONS[0].id;
+  }
+};
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored && stored !== themeId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setThemeId(stored);
-    }
-  }, [themeId]);
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [themeId, setThemeId] = useState<string>(getStoredThemeId);
 
   useEffect(() => {
     if (typeof window === "undefined") {
