@@ -6,6 +6,8 @@ import { formatDateTime, formatDuration } from "@/utils/time";
 type TaskCardProps = {
   task: Task;
   seconds: number;
+  collectionName?: string | null;
+  collectionColor?: string | null;
   onToggleComplete: (id: string) => void;
   onStart: (id: string) => void;
   onPause: (id: string) => void;
@@ -17,6 +19,8 @@ type TaskCardProps = {
 export const TaskCard = ({
   task,
   seconds,
+  collectionName,
+  collectionColor,
   onToggleComplete,
   onStart,
   onPause,
@@ -66,6 +70,16 @@ export const TaskCard = ({
                 <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600">
                   {formatDuration(seconds)}
                 </span>
+                {collectionName && (
+                  <span
+                    className="rounded-full px-3 py-1 text-xs font-semibold text-white"
+                    style={{
+                      background: collectionColor ?? "#0f172a",
+                    }}
+                  >
+                    {collectionName}
+                  </span>
+                )}
                 {task.running && (
                   <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                     Running

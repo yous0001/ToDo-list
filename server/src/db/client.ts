@@ -1,7 +1,11 @@
 import { MongoClient, Db, Collection } from "mongodb";
 
 import { env } from "../config/env";
-import { TaskDocument, GoalDocument } from "../types/task";
+import {
+  TaskDocument,
+  GoalDocument,
+  CollectionDocument,
+} from "../types/task";
 import { UserDocument } from "../types/user";
 
 let client: MongoClient | null = null;
@@ -24,6 +28,11 @@ export const connectToDatabase = async () => {
   await goalsCollection.createIndex({ id: 1 }, { unique: true });
   await goalsCollection.createIndex({ userId: 1 });
 
+  const collectionsCollection =
+    database.collection<CollectionDocument>("collections");
+  await collectionsCollection.createIndex({ id: 1 }, { unique: true });
+  await collectionsCollection.createIndex({ userId: 1 });
+
   const usersCollection = database.collection<UserDocument>("users");
   await usersCollection.createIndex({ id: 1 }, { unique: true });
   await usersCollection.createIndex({ email: 1 }, { unique: true });
@@ -43,6 +52,13 @@ export const getGoalsCollection = async (): Promise<
 > => {
   const db = await connectToDatabase();
   return db.collection<GoalDocument>("goals");
+};
+
+export const getCollectionsCollection = async (): Promise<
+  Collection<CollectionDocument>
+> => {
+  const db = await connectToDatabase();
+  return db.collection<CollectionDocument>("collections");
 };
 
 export const getUsersCollection = async (): Promise<

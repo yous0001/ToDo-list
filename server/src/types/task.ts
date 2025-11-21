@@ -13,6 +13,7 @@ export type TaskDocument = {
   updatedAt: number;
   dueDate: number | null; // Due date timestamp
   startDate: number | null; // When user wants to start working on task
+  collectionId: string | null;
 };
 
 export type Goal = {
@@ -26,3 +27,13 @@ export type Goal = {
 };
 
 export type GoalDocument = Goal;
+
+export type CollectionDocument = {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
+};

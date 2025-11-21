@@ -5,6 +5,7 @@ import { env } from "./config/env";
 import { connectToDatabase } from "./db/client";
 import { taskRouter } from "./routes/taskRoutes";
 import { goalRouter } from "./routes/goalRoutes";
+import { collectionRouter } from "./routes/collectionRoutes";
 import { authRouter } from "./routes/authRoutes";
 import { requireAuth } from "./middleware/requireAuth";
 
@@ -24,6 +25,7 @@ app.get("/health", (_req, res) => {
 app.use("/auth", authRouter);
 app.use("/tasks", requireAuth, taskRouter);
 app.use("/goals", requireAuth, goalRouter);
+app.use("/collections", requireAuth, collectionRouter);
 
 const startServer = async () => {
   await connectToDatabase();

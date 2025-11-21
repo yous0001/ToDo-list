@@ -13,4 +13,15 @@ export type Task = {
   updatedAt: number;
   dueDate: number | null; // Due date timestamp
   startDate: number | null; // When user wants to start working on task
+  collectionId: string | null;
+};
+
+export type Collection = {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  color: string;
+  createdAt: number;
+  updatedAt: number;
 };

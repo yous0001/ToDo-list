@@ -2,6 +2,11 @@
 
 import { FormEventHandler, MouseEvent } from "react";
 
+type SimpleCollection = {
+  id: string;
+  name: string;
+};
+
 type TaskComposerModalProps = {
   open: boolean;
   title: string;
@@ -11,6 +16,8 @@ type TaskComposerModalProps = {
   startDate: string;
   dueDate: string;
   dueToday: boolean;
+  collectionId: string | null;
+  collections: SimpleCollection[];
   onSubmit: FormEventHandler<HTMLFormElement>;
   onClose: () => void;
   onCancelEdit: () => void;
@@ -19,6 +26,7 @@ type TaskComposerModalProps = {
   onStartDateChange: (value: string) => void;
   onDueDateChange: (value: string) => void;
   onDueTodayChange: (value: boolean) => void;
+  onCollectionChange: (value: string | null) => void;
 };
 
 export const TaskComposerModal = ({
@@ -30,6 +38,8 @@ export const TaskComposerModal = ({
   startDate,
   dueDate,
   dueToday,
+  collectionId,
+  collections,
   onSubmit,
   onClose,
   onCancelEdit,
@@ -38,6 +48,7 @@ export const TaskComposerModal = ({
   onStartDateChange,
   onDueDateChange,
   onDueTodayChange,
+  onCollectionChange,
 }: TaskComposerModalProps) => {
   if (!open) {
     return null;
@@ -149,6 +160,29 @@ export const TaskComposerModal = ({
               />
             </label>
           </div>
+
+          <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+            Collection
+            <select
+              value={collectionId ?? ""}
+              onChange={(event) =>
+                onCollectionChange(
+                  event.target.value === "" ? null : event.target.value
+                )
+              }
+              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-normal text-slate-900 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+            >
+              <option value="">No collection</option>
+              {collections.map((collection) => (
+                <option key={collection.id} value={collection.id}>
+                  {collection.name}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs font-normal text-slate-500">
+              Group tasks into long-running workflows for better tracking.
+            </span>
+          </label>
 
           {formError && (
             <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-600">

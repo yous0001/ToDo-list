@@ -61,6 +61,7 @@ export const api = {
     description?: string;
     startDate?: number | null;
     dueDate?: number | null;
+    collectionId?: string | null;
   }) =>
     apiRequest("/tasks", {
       method: "POST",
@@ -98,6 +99,29 @@ export const api = {
     }),
   deleteGoal: (id: string) =>
     apiRequest(`/goals/${id}`, {
+      method: "DELETE",
+      parseJson: false,
+      auth: true,
+    }),
+  listCollections: () => apiRequest("/collections", { auth: true }),
+  createCollection: (payload: {
+    name: string;
+    description?: string;
+    color?: string;
+  }) =>
+    apiRequest("/collections", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      auth: true,
+    }),
+  updateCollection: (id: string, payload: Partial<Record<string, unknown>>) =>
+    apiRequest(`/collections/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+      auth: true,
+    }),
+  deleteCollection: (id: string) =>
+    apiRequest(`/collections/${id}`, {
       method: "DELETE",
       parseJson: false,
       auth: true,

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { randomUUID } from "crypto";
 import { WithId } from "mongodb";
 
-import { getTasksCollection } from "../db/client";
+import { getTasksCollection, getCollectionsCollection } from "../db/client";
 import { TaskDocument } from "../types/task";
 
 const toResponse = (doc: WithId<TaskDocument> | TaskDocument) => {
@@ -13,6 +13,7 @@ const toResponse = (doc: WithId<TaskDocument> | TaskDocument) => {
     completedAt: rest.completedAt ?? null,
     dueDate: rest.dueDate ?? null,
     startDate: rest.startDate ?? null,
+    collectionId: rest.collectionId ?? null,
   };
 };
 
@@ -33,6 +34,28 @@ const sanitizeTimestamp = (value: unknown) => {
     return null;
   }
   return typeof value === "number" && Number.isFinite(value) ? value : null;
+};
+
+const sanitizeCollectionId = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return null;
+};
+
+const validateCollectionOwnership = async (
+  collectionId: string | null,
+  userId: string
+) => {
+  if (!collectionId) {
+    return true;
+  }
+  const collections = await getCollectionsCollection();
+  const exists = await collections.findOne({ id: collectionId, userId });
+  return Boolean(exists);
 };
 
 export const getTasks = async (req: Request, res: Response) => {
@@ -62,12 +85,21 @@ export const createTask = async (req: Request, res: Response) => {
   const description = sanitizeDescription(req.body?.description ?? "");
   const dueDate = sanitizeTimestamp(req.body?.dueDate);
   const startDate = sanitizeTimestamp(req.body?.startDate);
+  const collectionId = sanitizeCollectionId(req.body?.collectionId);
 
   if (!title) {
     return res.status(400).json({ error: "Task title is required" });
   }
 
   try {
+    const collectionValid = await validateCollectionOwnership(
+      collectionId,
+      userId
+    );
+    if (!collectionValid) {
+      return res.status(400).json({ error: "Invalid collection" });
+    }
+
     const collection = await getTasksCollection();
     const timestamp = Date.now();
     const task: TaskDocument = {
@@ -83,6 +115,7 @@ export const createTask = async (req: Request, res: Response) => {
       completedAt: null,
       dueDate,
       startDate,
+      collectionId,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -154,6 +187,15 @@ export const updateTask = async (req: Request, res: Response) => {
 
     if ("startDate" in body) {
       updates.startDate = sanitizeTimestamp(body.startDate);
+    }
+
+    if ("collectionId" in body) {
+      const newCollectionId = sanitizeCollectionId(body.collectionId);
+      const valid = await validateCollectionOwnership(newCollectionId, ownerId);
+      if (!valid) {
+        return res.status(400).json({ error: "Invalid collection" });
+      }
+      updates.collectionId = newCollectionId;
     }
 
     const result = await collection.findOneAndUpdate(

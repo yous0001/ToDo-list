@@ -6,6 +6,7 @@ import { TaskCard } from "@/components/task-card";
 import { TaskComposerModal } from "@/components/task-composer-modal";
 import { useTaskManager } from "@/hooks/use-task-manager";
 import { Task } from "@/types/task";
+import { useCollections } from "@/hooks/use-collections";
 import { getDisplaySeconds } from "@/utils/time";
 import {
   dateStringToTimestamp,
@@ -58,11 +59,16 @@ export default function TasksPage() {
   } = useTaskManager();
 
   const { user, loading: authLoading } = useAuth();
+  const { collections, mapById } = useCollections();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [dueToday, setDueToday] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<
+    string | null
+  >(null);
+  const [collectionFilter, setCollectionFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
@@ -84,7 +90,11 @@ export default function TasksPage() {
     const search = searchTerm.trim().toLowerCase();
     return tasksWithSeconds.filter(({ task }) => {
       const matchesFilter = FILTER_PREDICATE[activeFilter](task);
-      if (!matchesFilter) {
+      const matchesCollection =
+        collectionFilter === "all"
+          ? true
+          : task.collectionId === collectionFilter;
+      if (!matchesFilter || !matchesCollection) {
         return false;
       }
       if (!search) {
@@ -95,7 +105,7 @@ export default function TasksPage() {
         task.description.toLowerCase().includes(search)
       );
     });
-  }, [tasksWithSeconds, activeFilter, searchTerm]);
+  }, [tasksWithSeconds, activeFilter, searchTerm, collectionFilter]);
 
   const visibleTasks = useMemo(() => {
     const sorted = [...filteredTasks];
@@ -137,6 +147,7 @@ export default function TasksPage() {
     setStartDate("");
     setDueDate("");
     setDueToday(false);
+    setSelectedCollectionId(null);
     setEditingId(null);
     setFormError(null);
   };
@@ -173,10 +184,17 @@ export default function TasksPage() {
         title,
         description,
         finalStartDate,
-        finalDueDate
+        finalDueDate,
+        selectedCollectionId
       );
     } else {
-      addTask(title, description, finalStartDate, finalDueDate);
+      addTask(
+        title,
+        description,
+        finalStartDate,
+        finalDueDate,
+        selectedCollectionId
+      );
     }
 
     closeComposer();
@@ -188,6 +206,7 @@ export default function TasksPage() {
     setStartDate(timestampToDateString(task.startDate));
     setDueDate(timestampToDateString(task.dueDate));
     setDueToday(false);
+    setSelectedCollectionId(task.collectionId);
     setEditingId(task.id);
     setFormError(null);
     setComposerOpen(true);

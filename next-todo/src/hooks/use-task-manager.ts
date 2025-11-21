@@ -95,7 +95,8 @@ export const useTaskManager = () => {
       title: string,
       description: string,
       startDate: number | null = null,
-      dueDate: number | null = null
+      dueDate: number | null = null,
+      collectionId: string | null = null
     ) => {
       if (!token) {
         return;
@@ -110,6 +111,7 @@ export const useTaskManager = () => {
           description: description.trim(),
           startDate,
           dueDate,
+          collectionId,
         })) as Task;
         setTasks((previous) => [created, ...previous]);
         setError(null);
@@ -128,13 +130,15 @@ export const useTaskManager = () => {
       title: string,
       description: string,
       startDate: number | null = null,
-      dueDate: number | null = null
+      dueDate: number | null = null,
+      collectionId: string | null = null
     ) => {
       mutateTask(id, () => ({
         title: title.trim(),
         description: description.trim(),
         startDate,
         dueDate,
+        collectionId,
       }));
     },
     [mutateTask]
