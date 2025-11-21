@@ -42,7 +42,9 @@ export async function apiRequest<T>(
     } catch {
       // ignore JSON parsing errors
     }
-    throw new Error(message);
+    const error = new Error(message) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
   }
 
   if (!parseJson) {

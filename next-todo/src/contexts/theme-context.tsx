@@ -91,9 +91,10 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored && stored !== themeId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setThemeId(stored);
     }
-  }, []);
+  }, [themeId]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

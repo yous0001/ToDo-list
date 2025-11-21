@@ -35,66 +35,87 @@ const STORAGE_KEY = "smart-todo-auth";
 
 type StoredAuth = {
   token: string;
+  user?: User;
+};
+
+const readStoredAuth = (): StoredAuth | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as StoredAuth) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredAuth = (auth: StoredAuth | null) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (!auth) {
+    localStorage.removeItem(STORAGE_KEY);
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(auth));
+  }
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const storedRaw = localStorage.getItem(STORAGE_KEY);
-    if (!storedRaw) {
-      setLoading(false);
-      return;
-    }
-    try {
-      const stored: StoredAuth = JSON.parse(storedRaw);
-      if (stored.token) {
-        setToken(stored.token);
-        setAuthToken(stored.token);
-      } else {
-        setLoading(false);
+    const stored = readStoredAuth();
+    if (stored?.token) {
+      setToken(stored.token);
+      setAuthToken(stored.token);
+      if (stored.user) {
+        setUser(stored.user);
       }
-    } catch {
-      setLoading(false);
     }
+    setInitialized(true);
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (!token) {
-      setUser(null);
-      setLoading(false);
       return;
     }
     try {
       const profile = (await api.me()) as User;
       setUser(profile);
+      writeStoredAuth({ token, user: profile });
     } catch (error) {
-      console.error("Failed to refresh profile", error);
-      setUser(null);
-      setToken(null);
-      setAuthToken(null);
-      localStorage.removeItem(STORAGE_KEY);
+      const status = (error as Error & { status?: number })?.status;
+      if (status === 401 || status === 403) {
+        setUser(null);
+        setToken(null);
+        setAuthToken(null);
+        writeStoredAuth(null);
+      } else {
+        console.error("Failed to refresh profile", error);
+      }
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    if (token) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token }));
-      setAuthToken(token);
-      refreshProfile();
-    } else if (!loading) {
+    if (!initialized) {
+      return;
+    }
+    if (!token) {
       setUser(null);
       setAuthToken(null);
-      localStorage.removeItem(STORAGE_KEY);
+      writeStoredAuth(null);
+      setLoading(false);
+      return;
     }
-  }, [token, refreshProfile, loading]);
+    setAuthToken(token);
+    refreshProfile();
+  }, [token, initialized, refreshProfile]);
 
   const register = useCallback(
     async (payload: { name: string; email: string; password: string }) => {
@@ -123,7 +144,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(result.token);
       setAuthToken(result.token);
       setUser(result.user);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: result.token }));
+      writeStoredAuth({ token: result.token, user: result.user });
+      setLoading(false);
     },
     []
   );
@@ -132,7 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null);
     setAuthToken(null);
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY);
+    writeStoredAuth(null);
   }, []);
 
   const value = useMemo(
