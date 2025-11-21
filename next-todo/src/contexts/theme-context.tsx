@@ -83,14 +83,22 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 const STORAGE_KEY = "smart-todo-theme";
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [themeId, setThemeId] = useState<string>(() => {
-    if (typeof window === "undefined") {
-      return THEME_OPTIONS[0].id;
-    }
-    return localStorage.getItem(STORAGE_KEY) ?? THEME_OPTIONS[0].id;
-  });
+  const [themeId, setThemeId] = useState<string>(THEME_OPTIONS[0].id);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && stored !== themeId) {
+      setThemeId(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
     localStorage.setItem(STORAGE_KEY, themeId);
   }, [themeId]);
 
