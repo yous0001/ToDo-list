@@ -20,10 +20,17 @@ const sanitizeNumber = (value: unknown, fallback = 0) =>
 
 export const goalRouter = Router();
 
-goalRouter.get("/", async (_req, res) => {
+goalRouter.get("/", async (req, res) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   try {
     const collection = await getGoalsCollection();
-    const goals = await collection.find().sort({ createdAt: -1 }).toArray();
+    const goals = await collection
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .toArray();
     res.json(goals.map(toResponse));
   } catch (error) {
     console.error(error);
@@ -32,6 +39,10 @@ goalRouter.get("/", async (_req, res) => {
 });
 
 goalRouter.post("/", async (req, res) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   const title = sanitizeString(req.body?.title);
   const type = req.body?.type;
   const targetMinutes = sanitizeNumber(req.body?.targetMinutes, 0);
@@ -57,6 +68,7 @@ goalRouter.post("/", async (req, res) => {
     const timestamp = Date.now();
     const goal: GoalDocument = {
       id: randomUUID(),
+      userId,
       type,
       title,
       targetMinutes,
@@ -73,6 +85,10 @@ goalRouter.post("/", async (req, res) => {
 
 goalRouter.patch("/:id", async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const collection = await getGoalsCollection();
@@ -109,7 +125,7 @@ goalRouter.patch("/:id", async (req, res) => {
     }
 
     const result = await collection.findOneAndUpdate(
-      { id },
+      { id, userId },
       { $set: updates },
       { returnDocument: "after" }
     );
@@ -127,10 +143,14 @@ goalRouter.patch("/:id", async (req, res) => {
 
 goalRouter.delete("/:id", async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const collection = await getGoalsCollection();
-    const result = await collection.deleteOne({ id });
+    const result = await collection.deleteOne({ id, userId });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Goal not found" });

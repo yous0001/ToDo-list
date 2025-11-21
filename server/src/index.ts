@@ -5,6 +5,8 @@ import { env } from "./config/env";
 import { connectToDatabase } from "./db/client";
 import { taskRouter } from "./routes/taskRoutes";
 import { goalRouter } from "./routes/goalRoutes";
+import { authRouter } from "./routes/authRoutes";
+import { requireAuth } from "./middleware/requireAuth";
 
 const app = express();
 
@@ -19,8 +21,9 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: Date.now() });
 });
 
-app.use("/tasks", taskRouter);
-app.use("/goals", goalRouter);
+app.use("/auth", authRouter);
+app.use("/tasks", requireAuth, taskRouter);
+app.use("/goals", requireAuth, goalRouter);
 
 const startServer = async () => {
   await connectToDatabase();

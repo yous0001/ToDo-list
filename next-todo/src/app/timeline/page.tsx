@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 
 import { SummaryPanel } from "@/components/summary-panel";
 import { useTaskManager } from "@/hooks/use-task-manager";
+import { useTheme } from "@/contexts/theme-context";
+import { useAuth } from "@/contexts/auth-context";
+import { SignInRequired } from "@/components/auth/sign-in-required";
 import {
   DAY_IN_MS,
   formatDuration,
@@ -14,6 +17,7 @@ type TimelineRange = "week" | "month" | "year";
 
 type TimelineBucket = {
   label: string;
+  subLabel: string;
   rangeStart: number;
   rangeEnd: number;
   started: number;
@@ -26,9 +30,9 @@ const RANGE_OPTIONS: Array<{
   label: string;
   detail: string;
 }> = [
-  { id: "week", label: "Week view", detail: "Last 7 days" },
-  { id: "month", label: "Month view", detail: "Last 4 weeks" },
-  { id: "year", label: "Year view", detail: "Last 12 months" },
+  { id: "week", label: "Week", detail: "7 days" },
+  { id: "month", label: "Month", detail: "4 weeks" },
+  { id: "year", label: "Year", detail: "12 months" },
 ];
 
 const WEEK_IN_MS = 7 * DAY_IN_MS;
@@ -39,15 +43,23 @@ const formatShortDate = (timestamp: number) =>
     day: "numeric",
   });
 
+const formatMonthYear = (timestamp: number) =>
+  new Date(timestamp).toLocaleDateString("en-US", {
+    month: "short",
+  });
+
 export default function TimelinePage() {
   const { tasks, summary } = useTaskManager();
+  const { theme } = useTheme();
   const [range, setRange] = useState<TimelineRange>("week");
+  const { user, loading: authLoading } = useAuth();
 
   const startOfToday = useMemo(() => getStartOfToday(), []);
 
   const timelineBuckets = useMemo(() => {
     const aggregateRange = (
       label: string,
+      subLabel: string,
       rangeStart: number,
       rangeEnd: number
     ): TimelineBucket => {
@@ -75,6 +87,7 @@ export default function TimelinePage() {
 
       return {
         label,
+        subLabel,
         rangeStart,
         rangeEnd,
         started,
@@ -84,37 +97,41 @@ export default function TimelinePage() {
     };
 
     if (range === "month") {
-      const base = startOfToday - 4 * WEEK_IN_MS + DAY_IN_MS;
+      const base = startOfToday - 4 * WEEK_IN_MS;
       return Array.from({ length: 4 }, (_, index) => {
         const rangeStart = base + index * WEEK_IN_MS;
-        const label = `Week of ${formatShortDate(rangeStart)}`;
-        return aggregateRange(label, rangeStart, rangeStart + WEEK_IN_MS);
+        const rangeEnd = rangeStart + WEEK_IN_MS;
+        const label = `Week ${index + 1}`;
+        const subLabel = `${formatShortDate(rangeStart)} – ${formatShortDate(
+          rangeEnd - DAY_IN_MS
+        )}`;
+        return aggregateRange(label, subLabel, rangeStart, rangeEnd);
       });
     }
 
     if (range === "year") {
-      const buckets: TimelineBucket[] = [];
-      const current = new Date();
-      current.setDate(1);
-      current.setHours(0, 0, 0, 0);
-
-      for (let i = 11; i >= 0; i -= 1) {
-        const start = new Date(current);
-        start.setMonth(start.getMonth() - i);
+      return Array.from({ length: 12 }, (_, idx) => {
+        const start = new Date(startOfToday);
+        start.setMonth(start.getMonth() - (11 - idx));
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
         const end = new Date(start);
         end.setMonth(end.getMonth() + 1);
-        const label = start.toLocaleDateString("en-US", { month: "short" });
-        buckets.push(aggregateRange(label, start.getTime(), end.getTime()));
-      }
-
-      return buckets;
+        const label = formatMonthYear(start.getTime());
+        const subLabel = `${start.getFullYear()}`;
+        return aggregateRange(label, subLabel, start.getTime(), end.getTime());
+      });
     }
 
-    // default: week view
+    // default week view
     const base = startOfToday - 6 * DAY_IN_MS;
     return Array.from({ length: 7 }, (_, index) => {
       const dayStart = base + index * DAY_IN_MS;
-      return aggregateRange(formatShortDate(dayStart), dayStart, dayStart + DAY_IN_MS);
+      const label = formatShortDate(dayStart);
+      const subLabel = new Date(dayStart).toLocaleDateString("en-US", {
+        weekday: "short",
+      });
+      return aggregateRange(label, subLabel, dayStart, dayStart + DAY_IN_MS);
     });
   }, [tasks, range, startOfToday]);
 
@@ -142,6 +159,17 @@ export default function TimelinePage() {
 
   const activeRange = RANGE_OPTIONS.find((option) => option.id === range);
 
+  if (!user && !authLoading) {
+    return (
+      <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
+        <SignInRequired
+          title="Sign in to view your timeline"
+          description="Visualize weekly, monthly, or yearly focus trends once you log in."
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
@@ -159,7 +187,7 @@ export default function TimelinePage() {
 
         <SummaryPanel summary={summary} />
 
-        <section className="rounded-[28px] border border-white/20 bg-white/95 p-6 shadow-2xl">
+        <section className="rounded-[28px] border border-white/15 bg-white/95 p-6 shadow-2xl">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
@@ -169,10 +197,32 @@ export default function TimelinePage() {
                 Where your time went
               </h2>
               <p className="text-sm text-slate-500">
-                Track starts, completions, and total focus time for any window.
+                Compare focus streaks just like Google Calendar’s view switcher.
               </p>
             </div>
-            <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow">
+              <div className="flex flex-wrap gap-2 rounded-full border border-slate-200 bg-slate-100/70 p-1">
+                {RANGE_OPTIONS.map((option) => {
+                  const active = option.id === range;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setRange(option.id)}
+                      className={`flex-1 min-w-[90px] rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                        active
+                          ? "bg-white text-slate-900 shadow"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                    >
+                      <span className="block text-[0.6rem] uppercase tracking-[0.35em] text-slate-400">
+                        {option.detail}
+                      </span>
+                      <span className="text-sm">{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
                   {activeRange?.detail}
@@ -180,33 +230,19 @@ export default function TimelinePage() {
                 <p className="text-2xl font-semibold text-slate-900">
                   {formatDuration(totals.focusSeconds)}
                 </p>
-                <p>{totals.completed} tasks completed</p>
+                <p className="text-sm text-slate-500">
+                  {totals.completed} tasks completed · {totals.started} started
+                </p>
               </div>
-              <label className="text-xs uppercase tracking-[0.35em] text-slate-400">
-                View range
-                <select
-                  value={range}
-                  onChange={(event) =>
-                    setRange(event.target.value as TimelineRange)
-                  }
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                >
-                  {RANGE_OPTIONS.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
           </div>
 
           {timelineBuckets.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-200/80 bg-slate-50/80 p-8 text-center text-slate-500">
-              Add tasks and start timers to see your historical progress.
+              Add tasks and start timers to build your timeline.
             </div>
           ) : (
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-6 space-y-4">
               {timelineBuckets.map((bucket) => {
                 const width =
                   maxFocus === 0
@@ -218,29 +254,34 @@ export default function TimelinePage() {
                 return (
                   <li
                     key={`${bucket.label}-${bucket.rangeStart}`}
-                    className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm sm:flex-row sm:items-center sm:gap-4"
+                    className="grid gap-4 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm sm:grid-cols-[180px,1fr]"
                   >
-                    <div className="flex w-full items-center gap-4 sm:w-56">
-                      <div className="min-w-[100px] text-sm font-semibold text-slate-800">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.35em] text-slate-400">
+                        {bucket.subLabel}
+                      </p>
+                      <p className="text-lg font-semibold text-slate-900">
                         {bucket.label}
-                      </div>
-                      <div className="flex-1 rounded-full bg-slate-200/60">
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="w-full rounded-full bg-slate-100 lg:flex-1">
                         <div
-                          className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-fuchsia-500"
+                          className={`h-3 rounded-full bg-gradient-to-r ${theme.accent}`}
                           style={{ width: `${width}%` }}
                         />
                       </div>
-                    </div>
-                    <div className="flex flex-1 flex-wrap gap-4 text-xs text-slate-500">
-                      <span className="rounded-full bg-indigo-50 px-3 py-1 font-semibold text-indigo-700">
-                        {formatDuration(bucket.focusSeconds)}
-                      </span>
-                      <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
-                        {bucket.completed} completed
-                      </span>
-                      <span className="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-700">
-                        {bucket.started} started
-                      </span>
+                      <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                        <span className="rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-900">
+                          {formatDuration(bucket.focusSeconds)}
+                        </span>
+                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                          {bucket.completed} completed
+                        </span>
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-semibold text-amber-700">
+                          {bucket.started} started
+                        </span>
+                      </div>
                     </div>
                   </li>
                 );

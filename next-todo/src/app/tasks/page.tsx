@@ -12,6 +12,8 @@ import {
   timestampToDateString,
   getEndOfToday,
 } from "@/utils/date";
+import { useAuth } from "@/contexts/auth-context";
+import { SignInRequired } from "@/components/auth/sign-in-required";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -55,6 +57,7 @@ export default function TasksPage() {
     deleteTask,
   } = useTaskManager();
 
+  const { user, loading: authLoading } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -211,6 +214,61 @@ export default function TasksPage() {
       setBulkBusy(false);
     }
   };
+
+  if (!user) {
+    return (
+      <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <header className="text-center text-white">
+            <p className="text-sm uppercase tracking-[0.4em] text-white/80">
+              Task cockpit
+            </p>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+              Task Manager
+            </h1>
+            <p className="mt-4 text-base text-white/80 sm:text-lg">
+              Track all your tasks with timers, precise schedules, and rich
+              descriptions.
+            </p>
+          </header>
+          <section className="rounded-[28px] border border-white/15 bg-white/10 p-8 text-center text-white shadow-2xl backdrop-blur">
+            <h2 className="text-2xl font-semibold">
+              Sign in to see your workspace
+            </h2>
+            <p className="mt-2 text-sm text-white/80">
+              Create an account or log in to capture tasks and synchronize your
+              progress across devices.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a
+                href="/login"
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-semibold text-white transition hover:border-white/60"
+              >
+                Log in
+              </a>
+              <a
+                href="/register"
+                className="rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:opacity-95"
+              >
+                Create account
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && !authLoading) {
+    return (
+      <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
+        <SignInRequired
+          title="Sign in to manage your tasks"
+          description="Access timers, notes, and scheduling tools once you log in."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">

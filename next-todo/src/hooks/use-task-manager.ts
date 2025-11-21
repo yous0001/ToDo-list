@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { Task } from "@/types/task";
 import { getDisplaySeconds, nowMs } from "@/utils/time";
+import { useAuth } from "@/contexts/auth-context";
 
 export type TaskSummary = {
   total: number;
@@ -21,8 +22,15 @@ export const useTaskManager = () => {
   const [now, setNow] = useState(() => nowMs());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
   const fetchTasks = useCallback(async () => {
+    if (!token) {
+      setTasks([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = (await api.listTasks()) as Task[];
@@ -33,7 +41,7 @@ export const useTaskManager = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchTasks();
@@ -55,6 +63,9 @@ export const useTaskManager = () => {
 
   const mutateTask = useCallback(
     async (id: string, getUpdates: (task: Task) => Partial<Task>) => {
+      if (!token) {
+        return;
+      }
       const current = tasks.find((task) => task.id === id);
       if (!current) {
         return;
@@ -76,7 +87,7 @@ export const useTaskManager = () => {
         fetchTasks();
       }
     },
-    [tasks, fetchTasks]
+    [tasks, fetchTasks, token]
   );
 
   const addTask = useCallback(
@@ -86,6 +97,9 @@ export const useTaskManager = () => {
       startDate: number | null = null,
       dueDate: number | null = null
     ) => {
+      if (!token) {
+        return;
+      }
       const trimmedTitle = title.trim();
       if (!trimmedTitle) {
         return;
@@ -105,7 +119,7 @@ export const useTaskManager = () => {
         setError(errorMessage(err));
       }
     },
-    [refreshNow]
+    [refreshNow, token]
   );
 
   const editTaskDetails = useCallback(
@@ -205,9 +219,12 @@ export const useTaskManager = () => {
 
   const deleteTask = useCallback(
     async (id: string) => {
+      if (!token) {
+        return;
+      }
       setTasks((previous) => previous.filter((task) => task.id !== id));
       try {
-        await api.deleteTask(id);
+      await api.deleteTask(id);
         setError(null);
       } catch (err) {
         console.error(err);
@@ -215,7 +232,7 @@ export const useTaskManager = () => {
         fetchTasks();
       }
     },
-    [fetchTasks]
+    [fetchTasks, token]
   );
 
   const summary: TaskSummary = useMemo(() => {

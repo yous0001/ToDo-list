@@ -37,10 +37,17 @@ const sanitizeTimestamp = (value: unknown) => {
 
 export const taskRouter = Router();
 
-taskRouter.get("/", async (_req, res) => {
+taskRouter.get("/", async (req, res) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   try {
     const collection = await getTasksCollection();
-    const tasks = await collection.find().sort({ createdAt: -1 }).toArray();
+    const tasks = await collection
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .toArray();
     res.json(tasks.map(toResponse));
   } catch (error) {
     console.error(error);
@@ -49,6 +56,10 @@ taskRouter.get("/", async (_req, res) => {
 });
 
 taskRouter.post("/", async (req, res) => {
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
   const title = sanitizeTitle(req.body?.title);
   const description = sanitizeDescription(req.body?.description ?? "");
   const dueDate = sanitizeTimestamp(req.body?.dueDate);
@@ -63,6 +74,7 @@ taskRouter.post("/", async (req, res) => {
     const timestamp = Date.now();
     const task: TaskDocument = {
       id: randomUUID(),
+      userId,
       title,
       description,
       completed: false,
@@ -86,6 +98,10 @@ taskRouter.post("/", async (req, res) => {
 
 taskRouter.patch("/:id", async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const collection = await getTasksCollection();
@@ -139,7 +155,7 @@ taskRouter.patch("/:id", async (req, res) => {
     }
 
     const result = await collection.findOneAndUpdate(
-      { id },
+      { id, userId },
       { $set: updates },
       { returnDocument: "after" }
     );
@@ -157,10 +173,14 @@ taskRouter.patch("/:id", async (req, res) => {
 
 taskRouter.delete("/:id", async (req, res) => {
   const { id } = req.params;
+  const userId = req.userId;
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
     const collection = await getTasksCollection();
-    const result = await collection.deleteOne({ id });
+    const result = await collection.deleteOne({ id, userId });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Task not found" });

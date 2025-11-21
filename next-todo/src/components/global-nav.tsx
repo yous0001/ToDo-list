@@ -3,6 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useTheme } from "@/contexts/theme-context";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { UserMenu } from "@/components/user-menu";
+
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/tasks", label: "Tasks" },
@@ -19,9 +23,12 @@ const isActivePath = (pathname: string, href: string) => {
 
 export const GlobalNav = () => {
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/15 bg-slate-950/70 backdrop-blur-xl">
+    <header
+      className={`sticky top-0 z-50 border-b border-white/15 ${theme.nav} backdrop-blur-xl`}
+    >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-4 sm:flex-nowrap">
         <Link
           href="/"
@@ -53,16 +60,11 @@ export const GlobalNav = () => {
           })}
         </nav>
 
-        <div className="w-full flex-1 sm:w-auto">
-          <Link
-            href="/tasks"
-            className="flex w-full items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:opacity-95"
-          >
-            New Task
-          </Link>
+        <div className="flex w-full flex-1 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
+          <ThemeSwitcher />
+          <UserMenu />
         </div>
       </div>
     </header>
   );
 };
-

@@ -1,5 +1,6 @@
 export type TaskDocument = {
   id: string;
+  userId: string;
   title: string;
   description: string;
   completed: boolean;
@@ -16,6 +17,7 @@ export type TaskDocument = {
 
 export type Goal = {
   id: string;
+  userId: string;
   type: "daily" | "weekly" | "monthly";
   title: string;
   targetMinutes: number; // Target time in minutes

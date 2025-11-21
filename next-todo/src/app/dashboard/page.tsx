@@ -11,6 +11,8 @@ import {
   getDisplaySeconds,
   startOfToday as getStartOfToday,
 } from "@/utils/time";
+import { useAuth } from "@/contexts/auth-context";
+import { SignInRequired } from "@/components/auth/sign-in-required";
 
 const SUGGESTIONS = [
   {
@@ -28,6 +30,7 @@ const SUGGESTIONS = [
 ] as const;
 
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
   const { tasks, summary, now } = useTaskManager();
 
   const startOfToday = useMemo(() => getStartOfToday(), []);
@@ -138,6 +141,60 @@ export default function DashboardPage() {
       weeklySummary.reduce((max, day) => Math.max(max, day.focusSeconds), 0),
     [weeklySummary]
   );
+
+  if (!user) {
+    return (
+      <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <header className="text-center text-white">
+            <p className="text-sm uppercase tracking-[0.4em] text-white/80">
+              Insight control
+            </p>
+            <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+              Dashboard
+            </h1>
+            <p className="mt-4 text-base text-white/80 sm:text-lg">
+              Track your productivity insights and progress
+            </p>
+          </header>
+          <section className="rounded-[28px] border border-white/15 bg-white/10 p-8 text-center text-white shadow-2xl backdrop-blur">
+            <h2 className="text-2xl font-semibold">
+              Sign in to unlock your insights
+            </h2>
+            <p className="mt-2 text-sm text-white/80">
+              Dashboards are personalized per account. Log in to explore your
+              completion rates, focus streaks, and cadence.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a
+                href="/login"
+                className="rounded-full border border-white/30 px-5 py-2 text-sm font-semibold text-white transition hover:border-white/60"
+              >
+                Log in
+              </a>
+              <a
+                href="/register"
+                className="rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-5 py-2 text-sm font-semibold text-white shadow-lg transition hover:opacity-95"
+              >
+                Create account
+              </a>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user && !authLoading) {
+    return (
+      <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
+        <SignInRequired
+          title="Sign in to view your dashboard"
+          description="Insights, streaks, and focus metrics unlock once you log in."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
