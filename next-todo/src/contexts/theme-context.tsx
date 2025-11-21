@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   ReactNode,
 } from "react";
@@ -82,25 +83,28 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "smart-todo-theme";
 
-const getStoredThemeId = () => {
-  if (typeof window === "undefined") {
-    return THEME_OPTIONS[0].id;
-  }
-  try {
-    return localStorage.getItem(STORAGE_KEY) ?? THEME_OPTIONS[0].id;
-  } catch {
-    return THEME_OPTIONS[0].id;
-  }
-};
-
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [themeId, setThemeId] = useState<string>(getStoredThemeId);
+  const [themeId, setThemeId] = useState<string>(THEME_OPTIONS[0].id);
+  const hydrated = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
-    localStorage.setItem(STORAGE_KEY, themeId);
+    if (!hydrated.current) {
+      hydrated.current = true;
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored && stored !== themeId) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
+          setThemeId(stored);
+        }
+      } catch {
+        // ignore
+      }
+    } else {
+      localStorage.setItem(STORAGE_KEY, themeId);
+    }
   }, [themeId]);
 
   const value = useMemo(() => {
