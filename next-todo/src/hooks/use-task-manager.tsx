@@ -267,7 +267,7 @@ export const TaskManagerProvider = ({ children }: { children: ReactNode }) => {
       }
       setTasks((previous) => previous.filter((task) => task.id !== id));
       try {
-      await api.deleteTask(id);
+        await api.deleteTask(id);
         setError(null);
       } catch (err) {
         console.error(err);

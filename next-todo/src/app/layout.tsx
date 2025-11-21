@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { AuthProvider } from "@/contexts/auth-context";
 import { AppShell } from "@/components/app-shell";
+import { TaskManagerProvider } from "@/hooks/use-task-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <AppShell>{children}</AppShell>
+            <TaskManagerProvider>
+              <AppShell>{children}</AppShell>
+            </TaskManagerProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
