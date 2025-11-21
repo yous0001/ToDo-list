@@ -18,7 +18,21 @@ export const buildVerificationEmail = ({
         <table role="presentation" cellpadding="0" cellspacing="0" width="540" style="background:#ffffff;border-radius:28px;padding:48px 40px;font-family:'Segoe UI',Arial,sans-serif;color:#0f172a;">
           <tr>
             <td style="text-align:center;">
-              <div style="display:inline-flex;width:60px;height:60px;border-radius:20px;background:linear-gradient(120deg,#6366f1,#ec4899);align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:700;">●</div>
+              <div style="display:inline-flex;width:70px;height:70px;border-radius:22px;background:#1f2937;align-items:center;justify-content:center;box-shadow:0 15px 30px rgba(15,23,42,0.35);">
+                <svg width="38" height="44" viewBox="0 0 38 44" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="emailDoc" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#6366f1"/>
+                      <stop offset="1" stop-color="#ec4899"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="4" y="2" width="26" height="40" rx="6" fill="url(#emailDoc)" />
+                  <rect x="9" y="16" width="17" height="3" rx="1.5" fill="#f8fafc" />
+                  <rect x="9" y="22" width="14" height="3" rx="1.5" fill="#f8fafc" />
+                  <rect x="9" y="28" width="10" height="3" rx="1.5" fill="#f8fafc" />
+                  <path d="M30 15c0-2.21-1.79-4-4-4h-3v12h7V15z" fill="#fde68a" opacity=".85" />
+                </svg>
+              </div>
               <h1 style="margin:24px 0 8px;font-size:28px;">Welcome to Smart Todo</h1>
               <p style="margin:0;font-size:16px;color:#475569;">Hi ${name}, let’s confirm it’s really you.</p>
             </td>

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "@/contexts/theme-context";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { UserMenu } from "@/components/user-menu";
+import { AppLogo } from "@/components/app-logo";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -40,12 +41,10 @@ export const GlobalNav = () => {
         <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
           <Link
             href="/"
-            className="flex items-center gap-2 text-lg font-semibold text-white transition hover:text-indigo-300"
+            className="flex items-center gap-3 text-lg font-semibold text-white transition hover:text-indigo-300"
           >
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-pink-500 text-xl text-white">
-              ●
-            </span>
-            Smart Todo
+            <AppLogo size={46} />
+            Smart Todo Tracker
           </Link>
 
           <button
