@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Task } from "@/types/task";
 import { formatDateTime, formatDuration } from "@/utils/time";
 
@@ -28,7 +29,6 @@ export const TaskCard = ({
   onEdit,
   onDelete,
 }: TaskCardProps) => {
-  const createdLabel = formatDateTime(task.createdAt);
   const startedLabel = formatDateTime(task.firstStartedAt);
   const finishedLabel = formatDateTime(task.completedAt);
 
@@ -36,121 +36,168 @@ export const TaskCard = ({
 
   return (
     <li
-      className={`rounded-[28px] border border-white/20 bg-white/95 p-6 shadow-2xl transition hover:-translate-y-0.5 ${
+      className={`group relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 shadow-lg transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-[1.03] hover:shadow-2xl hover:border-white/30 ${
         task.completed ? "opacity-75" : ""
       }`}
     >
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex flex-1 items-start gap-4">
-            <button
-              type="button"
-              onClick={() => onToggleComplete(task.id)}
-              className={`mt-1 flex h-11 w-11 items-center justify-center rounded-full border text-lg transition ${
-                task.completed
-                  ? "border-emerald-500 bg-emerald-500 text-white shadow-md"
-                  : "border-slate-200 text-slate-400 hover:text-slate-600"
-              }`}
-              aria-label={
-                task.completed ? "Mark task as incomplete" : "Mark task as done"
-              }
-            >
-              {task.completed ? "✓" : ""}
-            </button>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">
-                {task.title}
-              </h2>
-              {task.description && (
-                <p className="mt-1 text-base text-slate-500">
-                  {task.description}
-                </p>
-              )}
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-indigo-50 px-3 py-1 text-sm font-semibold text-indigo-600">
-                  {formatDuration(seconds)}
+      {/* Default Compact View */}
+      <div className="relative z-10 p-4">
+        <div className="flex items-center gap-3">
+          {/* Complete Checkbox - Always visible if completed, hidden otherwise */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleComplete(task.id);
+            }}
+            className={`relative z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transform will-change-transform ${
+              task.completed
+                ? "border-emerald-500 bg-emerald-500 text-white shadow-md opacity-100 scale-100"
+                : "border-slate-300 text-transparent opacity-0 scale-90 group-hover:opacity-100 group-hover:border-slate-400 group-hover:scale-100 group-hover:shadow-sm"
+            }`}
+            aria-label={
+              task.completed ? "Mark task as incomplete" : "Mark task as done"
+            }
+          >
+            {task.completed ? "✓" : ""}
+          </button>
+
+          {/* Title and Timer - Always visible */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-semibold text-slate-900 truncate">
+              {task.title}
+            </h2>
+            <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                ⏱️ {formatDuration(seconds)}
+              </span>
+              {task.running && (
+                <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+                  ● Running
                 </span>
-                {collectionName && (
-                  <span
-                    className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-                    style={{
-                      background: collectionColor ?? "#0f172a",
-                    }}
-                  >
-                    {collectionName}
-                  </span>
-                )}
-                {task.running && (
-                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                    Running
-                  </span>
-                )}
-                {task.completed && (
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    Completed
-                  </span>
-                )}
-              </div>
-              <div className="mt-4 grid gap-2 text-xs text-slate-500 sm:grid-cols-3">
-                <p>
-                  <span className="font-semibold text-slate-700">Created:</span>{" "}
-                  <span>{infoLabel(createdLabel)}</span>
-                </p>
-                <p>
-                  <span className="font-semibold text-slate-700">Started:</span>{" "}
-                  <span>{infoLabel(startedLabel)}</span>
-                </p>
-                <p>
-                  <span className="font-semibold text-slate-700">
-                    Finished:
-                  </span>{" "}
-                  <span>{infoLabel(finishedLabel)}</span>
-                </p>
-              </div>
+              )}
+              {task.completed && (
+                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                  ✓ Completed
+                </span>
+              )}
+              {collectionName && (
+                <span
+                  className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
+                  style={{
+                    background: collectionColor ?? "#0f172a",
+                  }}
+                >
+                  {collectionName}
+                </span>
+              )}
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => (task.running ? onPause(task.id) : onStart(task.id))}
-            className={`rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow ${
-              task.running
-                ? "bg-rose-500 hover:bg-rose-500/90"
-                : "bg-indigo-500 hover:bg-indigo-500/90"
-            }`}
-          >
-            {task.running
-              ? "Pause timer"
-              : task.elapsed > 0
-              ? "Resume timer"
-              : "Start timer"}
-          </button>
-          <button
-            type="button"
-            onClick={() => onReset(task.id)}
-            disabled={task.elapsed === 0 && !task.running}
-            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition enabled:hover:border-slate-300 enabled:hover:text-slate-800 disabled:opacity-40"
-          >
-            Reset timer
-          </button>
-          <button
-            type="button"
-            onClick={() => onEdit(task)}
-            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(task.id)}
-            className="rounded-2xl border border-transparent bg-slate-900/90 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-900"
-          >
-            Delete
-          </button>
+      {/* Expanded Content on Hover */}
+      <div className="relative z-20 max-h-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[max-height] group-hover:max-h-96 group-hover:pb-4">
+        <div className="px-4 space-y-4 bg-white/95">
+          {/* Description */}
+          {task.description && (
+            <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-100 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+              {task.description}
+            </p>
+          )}
+
+          {/* Date Information */}
+          <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-2 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-150 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-700">Started at:</span>
+              <span className="text-slate-600">{infoLabel(startedLabel)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-700">Finished at:</span>
+              <span className="text-slate-600">{infoLabel(finishedLabel)}</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 pt-2 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-200 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+            <Link
+              href={`/tasks/${task.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-indigo-100 px-5 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:border-indigo-300 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:shadow-md active:scale-95"
+            >
+              <span className="mr-1.5">👁️</span>
+              View Task
+            </Link>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (task.running) {
+                  onPause(task.id);
+                } else {
+                  onStart(task.id);
+                }
+              }}
+              className={`relative z-30 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:shadow-lg active:scale-95 ${
+                task.running
+                  ? "bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700"
+                  : "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700"
+              }`}
+            >
+              <span className="mr-1.5">
+                {task.running ? "⏸️" : task.elapsed > 0 ? "▶️" : "▶️"}
+              </span>
+              {task.running ? "Pause" : task.elapsed > 0 ? "Resume" : "Start"}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onReset(task.id);
+              }}
+              disabled={task.elapsed === 0 && !task.running}
+              className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform enabled:hover:scale-105 enabled:hover:border-slate-300 enabled:hover:bg-slate-50 enabled:hover:text-slate-800 enabled:hover:shadow-md enabled:active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <span className="mr-1.5">🔄</span>
+              Reset
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(task);
+              }}
+              className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 hover:shadow-md active:scale-95"
+            >
+              <span className="mr-1.5">✏️</span>
+              Edit
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(task.id);
+              }}
+              className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-transparent bg-gradient-to-r from-slate-800 to-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:from-slate-900 hover:to-slate-950 hover:shadow-lg active:scale-95"
+            >
+              <span className="mr-1.5">🗑️</span>
+              Delete
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Clickable overlay for navigation - only covers compact view */}
+      <Link
+        href={`/tasks/${task.id}`}
+        className="absolute inset-0 z-0 group-hover:pointer-events-none"
+        aria-label={`View details for ${task.title}`}
+      />
     </li>
   );
 };

@@ -71,7 +71,7 @@ export default function TasksPage() {
   const [collectionFilter, setCollectionFilter] = useState<string>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<FilterId>("all");
+  const [activeFilter, setActiveFilter] = useState<FilterId>("active");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<SortOptionId>("recent");
   const [bulkBusy, setBulkBusy] = useState(false);
