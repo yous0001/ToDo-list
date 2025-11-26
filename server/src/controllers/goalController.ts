@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
 import { ObjectId, WithId } from "mongodb";
 
-import { getGoalsCollection } from "../db/client";
-import { GoalDocument } from "../types/task";
+import { getGoalsCollection, getCollectionsCollection } from "../db/client";
+import { GoalDocument, GoalStatus } from "../types/task";
 
 const toResponse = (doc: WithId<GoalDocument> | GoalDocument) => {
   const { _id, ...rest } = doc as WithId<GoalDocument>;
   return {
     id: _id.toHexString(),
     ...rest,
+    collectionId: rest.collectionId ?? null,
+    status: (rest.status ?? "pending") as GoalStatus,
+    completedAt: rest.completedAt ?? null,
   };
 };
 
@@ -26,6 +29,38 @@ const sanitizeNumber = (value: unknown, fallback = 0) =>
   typeof value === "number" && Number.isFinite(value) && value >= 0
     ? value
     : fallback;
+
+const sanitizeCollectionId = (value: unknown) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+  return null;
+};
+
+const isValidGoalStatus = (value: unknown): value is GoalStatus =>
+  value === "pending" || value === "achieved" || value === "failed";
+
+const validateCollectionOwnership = async (
+  collectionId: string | null,
+  userId: string
+) => {
+  if (!collectionId) {
+    return true;
+  }
+  const collections = await getCollectionsCollection();
+  const objectId = parseObjectId(collectionId);
+  if (!objectId) {
+    return false;
+  }
+  const exists = await collections.findOne({
+    _id: objectId,
+    userId,
+  });
+  return Boolean(exists);
+};
 
 export const getGoals = async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -53,6 +88,7 @@ export const createGoal = async (req: Request, res: Response) => {
   const title = sanitizeString(req.body?.title);
   const type = req.body?.type;
   const targetMinutes = sanitizeNumber(req.body?.targetMinutes, 0);
+  const collectionId = sanitizeCollectionId(req.body?.collectionId);
 
   if (!title) {
     return res.status(400).json({ error: "Goal title is required" });
@@ -71,6 +107,14 @@ export const createGoal = async (req: Request, res: Response) => {
   }
 
   try {
+    const ownsCollection = await validateCollectionOwnership(
+      collectionId,
+      userId
+    );
+    if (!ownsCollection) {
+      return res.status(400).json({ error: "Invalid collection" });
+    }
+
     const collection = await getGoalsCollection();
     const timestamp = Date.now();
     const goal: GoalDocument = {
@@ -79,6 +123,9 @@ export const createGoal = async (req: Request, res: Response) => {
       type,
       title,
       targetMinutes,
+      collectionId,
+      status: "pending",
+      completedAt: null,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -137,6 +184,29 @@ export const updateGoal = async (req: Request, res: Response) => {
           .json({ error: "Goal type must be daily, weekly, or monthly" });
       }
       updates.type = body.type;
+    }
+
+    if ("collectionId" in body) {
+      const collectionId = sanitizeCollectionId(body.collectionId);
+      const ownsCollection = await validateCollectionOwnership(
+        collectionId,
+        ownerId
+      );
+      if (!ownsCollection) {
+        return res.status(400).json({ error: "Invalid collection" });
+      }
+      updates.collectionId = collectionId;
+    }
+
+    if ("status" in body) {
+      if (!isValidGoalStatus(body.status)) {
+        return res
+          .status(400)
+          .json({ error: "Goal status must be pending, achieved, or failed" });
+      }
+      updates.status = body.status;
+      updates.completedAt =
+        body.status === "pending" ? null : Math.max(now, 0);
     }
 
     const result = await collection.findOneAndUpdate(

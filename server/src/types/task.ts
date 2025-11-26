@@ -18,12 +18,17 @@ export type TaskDocument = {
   collectionId: string | null;
 };
 
+export type GoalStatus = "pending" | "achieved" | "failed";
+
 export type GoalDocument = {
   _id: ObjectId;
   userId: string;
   type: "daily" | "weekly" | "monthly";
   title: string;
   targetMinutes: number; // Target time in minutes
+  collectionId: string | null;
+  status: GoalStatus;
+  completedAt: number | null;
   createdAt: number;
   updatedAt: number;
 };

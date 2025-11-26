@@ -25,3 +25,18 @@ export type Collection = {
   createdAt: number;
   updatedAt: number;
 };
+
+export type GoalStatus = "pending" | "achieved" | "failed";
+
+export type Goal = {
+  id: string;
+  userId: string;
+  title: string;
+  type: "daily" | "weekly" | "monthly";
+  targetMinutes: number;
+  collectionId: string | null;
+  status: GoalStatus;
+  completedAt: number | null;
+  createdAt: number;
+  updatedAt: number;
+};

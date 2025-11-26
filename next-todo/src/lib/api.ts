@@ -85,6 +85,7 @@ export const api = {
     title: string;
     type: "daily" | "weekly" | "monthly";
     targetMinutes: number;
+    collectionId?: string | null;
   }) =>
     apiRequest("/goals", {
       method: "POST",

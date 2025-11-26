@@ -21,20 +21,18 @@ export const connectToDatabase = async () => {
   database = client.db(env.mongoDbName);
 
   const tasksCollection = database.collection<TaskDocument>("tasks");
-  await tasksCollection.createIndex({ id: 1 }, { unique: true });
   await tasksCollection.createIndex({ userId: 1 });
+  await tasksCollection.createIndex({ collectionId: 1 });
 
   const goalsCollection = database.collection<GoalDocument>("goals");
-  await goalsCollection.createIndex({ id: 1 }, { unique: true });
   await goalsCollection.createIndex({ userId: 1 });
+  await goalsCollection.createIndex({ collectionId: 1 });
 
   const collectionsCollection =
     database.collection<CollectionDocument>("collections");
-  await collectionsCollection.createIndex({ id: 1 }, { unique: true });
   await collectionsCollection.createIndex({ userId: 1 });
 
   const usersCollection = database.collection<UserDocument>("users");
-  await usersCollection.createIndex({ id: 1 }, { unique: true });
   await usersCollection.createIndex({ email: 1 }, { unique: true });
 
   return database;
