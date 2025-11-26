@@ -177,10 +177,8 @@ export const getProfile = async (req: Request, res: Response) => {
   try {
     const users = await getUsersCollection();
     const objectId = parseObjectId(userId);
-    if (!objectId) {
-      return res.status(400).json({ error: "Invalid user id" });
-    }
-    const user = await users.findOne({ _id: objectId });
+    const query = objectId ? { _id: objectId } : { id: userId };
+    const user = await users.findOne(query);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
