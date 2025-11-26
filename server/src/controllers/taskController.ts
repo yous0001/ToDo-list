@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { WithId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 
 import { getTasksCollection, getCollectionsCollection } from "../db/client";
 import { TaskDocument } from "../types/task";
@@ -8,6 +7,7 @@ import { TaskDocument } from "../types/task";
 const toResponse = (doc: WithId<TaskDocument> | TaskDocument) => {
   const { _id, ...rest } = doc as WithId<TaskDocument>;
   return {
+    id: _id.toHexString(),
     ...rest,
     firstStartedAt: rest.firstStartedAt ?? null,
     completedAt: rest.completedAt ?? null,
@@ -15,6 +15,13 @@ const toResponse = (doc: WithId<TaskDocument> | TaskDocument) => {
     startDate: rest.startDate ?? null,
     collectionId: rest.collectionId ?? null,
   };
+};
+
+const parseObjectId = (value: string) => {
+  if (!ObjectId.isValid(value)) {
+    return null;
+  }
+  return new ObjectId(value);
 };
 
 const sanitizeTitle = (value: unknown) =>
@@ -54,7 +61,16 @@ const validateCollectionOwnership = async (
     return true;
   }
   const collections = await getCollectionsCollection();
-  const exists = await collections.findOne({ id: collectionId, userId });
+  const collectionObjectId = parseObjectId(collectionId);
+  const orConditions = [];
+  if (collectionObjectId) {
+    orConditions.push({ _id: collectionObjectId });
+  }
+  orConditions.push({ id: collectionId });
+  const exists = await collections.findOne({
+    userId,
+    $or: orConditions,
+  });
   return Boolean(exists);
 };
 
@@ -103,7 +119,7 @@ export const createTask = async (req: Request, res: Response) => {
     const collection = await getTasksCollection();
     const timestamp = Date.now();
     const task: TaskDocument = {
-      id: randomUUID(),
+      _id: new ObjectId(),
       userId,
       title,
       description,
@@ -120,7 +136,7 @@ export const createTask = async (req: Request, res: Response) => {
       updatedAt: timestamp,
     };
     await collection.insertOne(task);
-    res.status(201).json(task);
+    res.status(201).json(toResponse(task));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create task" });
@@ -135,6 +151,10 @@ export const updateTask = async (req: Request, res: Response) => {
   }
   if (!id) {
     return res.status(400).json({ error: "Task id is required" });
+  }
+  const taskObjectId = parseObjectId(id);
+  if (!taskObjectId) {
+    return res.status(400).json({ error: "Invalid task id" });
   }
   const ownerId = userId;
 
@@ -199,7 +219,7 @@ export const updateTask = async (req: Request, res: Response) => {
     }
 
     const result = await collection.findOneAndUpdate(
-      { id, userId: ownerId },
+      { _id: taskObjectId, userId: ownerId },
       { $set: updates },
       { returnDocument: "after" }
     );
@@ -224,11 +244,18 @@ export const deleteTask = async (req: Request, res: Response) => {
   if (!id) {
     return res.status(400).json({ error: "Task id is required" });
   }
+  const taskObjectId = parseObjectId(id);
+  if (!taskObjectId) {
+    return res.status(400).json({ error: "Invalid task id" });
+  }
   const ownerId = userId;
 
   try {
     const collection = await getTasksCollection();
-    const result = await collection.deleteOne({ id, userId: ownerId });
+    const result = await collection.deleteOne({
+      _id: taskObjectId,
+      userId: ownerId,
+    });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Task not found" });
@@ -240,5 +267,3 @@ export const deleteTask = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete task" });
   }
 };
-
-

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { randomUUID } from "crypto";
+import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
+import { ObjectId } from "mongodb";
 
 import { connectToDatabase, getUsersCollection } from "../db/client";
 import { env } from "../config/env";
@@ -10,13 +11,20 @@ import { UserDocument, PublicUser } from "../types/user";
 import { signAuthToken } from "../middleware/requireAuth";
 
 const toPublicUser = (user: UserDocument): PublicUser => ({
-  id: user.id,
+  id: user._id.toHexString(),
   name: user.name,
   email: user.email,
   verified: user.verified,
 });
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
+const parseObjectId = (value: string) => {
+  if (!ObjectId.isValid(value)) {
+    return null;
+  }
+  return new ObjectId(value);
+};
 
 export const register = async (req: Request, res: Response) => {
   const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
@@ -47,10 +55,10 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const timestamp = Date.now();
-    const verificationToken = randomUUID();
+    const verificationToken = randomBytes(32).toString("hex");
 
     const user: UserDocument = {
-      id: randomUUID(),
+      _id: new ObjectId(),
       name,
       email,
       passwordHash: await bcrypt.hash(password, 10),
@@ -107,7 +115,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
     }
 
     await users.updateOne(
-      { id: user.id },
+      { _id: user._id },
       {
         $set: {
           verified: true,
@@ -152,7 +160,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const token = signAuthToken({ userId: user.id });
+    const token = signAuthToken({ userId: user._id.toHexString() });
 
     res.json({ token, user: toPublicUser(user) });
   } catch (error) {
@@ -168,7 +176,11 @@ export const getProfile = async (req: Request, res: Response) => {
   }
   try {
     const users = await getUsersCollection();
-    const user = await users.findOne({ id: userId });
+    const objectId = parseObjectId(userId);
+    if (!objectId) {
+      return res.status(400).json({ error: "Invalid user id" });
+    }
+    const user = await users.findOne({ _id: objectId });
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }

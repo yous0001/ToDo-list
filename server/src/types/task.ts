@@ -1,5 +1,7 @@
+import { ObjectId } from "mongodb";
+
 export type TaskDocument = {
-  id: string;
+  _id: ObjectId;
   userId: string;
   title: string;
   description: string;
@@ -16,8 +18,8 @@ export type TaskDocument = {
   collectionId: string | null;
 };
 
-export type Goal = {
-  id: string;
+export type GoalDocument = {
+  _id: ObjectId;
   userId: string;
   type: "daily" | "weekly" | "monthly";
   title: string;
@@ -26,10 +28,8 @@ export type Goal = {
   updatedAt: number;
 };
 
-export type GoalDocument = Goal;
-
 export type CollectionDocument = {
-  id: string;
+  _id: ObjectId;
   userId: string;
   name: string;
   description: string;

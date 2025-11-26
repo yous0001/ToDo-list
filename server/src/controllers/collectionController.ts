@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { randomUUID } from "crypto";
+import { ObjectId, WithId } from "mongodb";
 
 import { getCollectionsCollection, getTasksCollection } from "../db/client";
 import { CollectionDocument } from "../types/task";
@@ -17,6 +17,29 @@ const sanitizeColor = (value: unknown) => {
   return "#4f46e5";
 };
 
+const parseObjectId = (value: string) => {
+  if (!ObjectId.isValid(value)) {
+    return null;
+  }
+  return new ObjectId(value);
+};
+
+const toCollectionResponse = (
+  doc: (WithId<CollectionDocument> | CollectionDocument) & { id?: string }
+) => {
+  const {
+    _id,
+    id: legacyId,
+    ...rest
+  } = doc as WithId<CollectionDocument> & {
+    id?: string;
+  };
+  return {
+    id: legacyId ?? _id.toHexString(),
+    ...rest,
+  };
+};
+
 export const listCollections = async (req: Request, res: Response) => {
   const userId = req.userId;
   if (!userId) {
@@ -28,7 +51,7 @@ export const listCollections = async (req: Request, res: Response) => {
       .find({ userId })
       .sort({ createdAt: -1 })
       .toArray();
-    res.json(collections);
+    res.json(collections.map((doc) => toCollectionResponse(doc)));
   } catch (error) {
     console.error("Failed to load collections", error);
     res.status(500).json({ error: "Failed to load collections" });
@@ -52,7 +75,7 @@ export const createCollection = async (req: Request, res: Response) => {
     const collection = await getCollectionsCollection();
     const timestamp = Date.now();
     const doc: CollectionDocument = {
-      id: randomUUID(),
+      _id: new ObjectId(),
       userId,
       name,
       description,
@@ -61,7 +84,7 @@ export const createCollection = async (req: Request, res: Response) => {
       updatedAt: timestamp,
     };
     await collection.insertOne(doc);
-    res.status(201).json(doc);
+    res.status(201).json(toCollectionResponse(doc));
   } catch (error) {
     console.error("Failed to create collection", error);
     res.status(500).json({ error: "Failed to create collection" });
@@ -77,6 +100,7 @@ export const updateCollection = async (req: Request, res: Response) => {
   if (!id) {
     return res.status(400).json({ error: "Collection id is required" });
   }
+  const objectId = parseObjectId(id);
 
   try {
     const collection = await getCollectionsCollection();
@@ -99,8 +123,10 @@ export const updateCollection = async (req: Request, res: Response) => {
       updates.color = sanitizeColor(body.color);
     }
 
+    const query = objectId ? { _id: objectId, userId } : { userId, id };
+
     const result = await collection.findOneAndUpdate(
-      { id, userId },
+      query,
       { $set: updates },
       { returnDocument: "after" }
     );
@@ -109,7 +135,7 @@ export const updateCollection = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Collection not found" });
     }
 
-    res.json(result);
+    res.json(toCollectionResponse(result));
   } catch (error) {
     console.error("Failed to update collection", error);
     res.status(500).json({ error: "Failed to update collection" });
@@ -125,16 +151,19 @@ export const deleteCollection = async (req: Request, res: Response) => {
   if (!id) {
     return res.status(400).json({ error: "Collection id is required" });
   }
+  const objectId = parseObjectId(id);
 
   try {
     const collection = await getCollectionsCollection();
-    const result = await collection.deleteOne({ id, userId });
+    const deleteQuery = objectId ? { _id: objectId, userId } : { userId, id };
+    const result = await collection.deleteOne(deleteQuery);
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Collection not found" });
     }
     const tasks = await getTasksCollection();
+    const collectionIdString = objectId ? objectId.toHexString() : id;
     await tasks.updateMany(
-      { userId, collectionId: id },
+      { userId, collectionId: { $in: [collectionIdString, id] } },
       { $set: { collectionId: null, updatedAt: Date.now() } }
     );
     res.status(204).send();
@@ -143,4 +172,3 @@ export const deleteCollection = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to delete collection" });
   }
 };
-

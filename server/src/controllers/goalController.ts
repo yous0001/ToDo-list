@@ -1,13 +1,22 @@
 import { Request, Response } from "express";
-import { randomUUID } from "crypto";
-import { WithId } from "mongodb";
+import { ObjectId, WithId } from "mongodb";
 
 import { getGoalsCollection } from "../db/client";
 import { GoalDocument } from "../types/task";
 
 const toResponse = (doc: WithId<GoalDocument> | GoalDocument) => {
   const { _id, ...rest } = doc as WithId<GoalDocument>;
-  return rest;
+  return {
+    id: _id.toHexString(),
+    ...rest,
+  };
+};
+
+const parseObjectId = (value: string) => {
+  if (!ObjectId.isValid(value)) {
+    return null;
+  }
+  return new ObjectId(value);
 };
 
 const sanitizeString = (value: unknown) =>
@@ -65,7 +74,7 @@ export const createGoal = async (req: Request, res: Response) => {
     const collection = await getGoalsCollection();
     const timestamp = Date.now();
     const goal: GoalDocument = {
-      id: randomUUID(),
+      _id: new ObjectId(),
       userId,
       type,
       title,
@@ -74,7 +83,7 @@ export const createGoal = async (req: Request, res: Response) => {
       updatedAt: timestamp,
     };
     await collection.insertOne(goal);
-    res.status(201).json(goal);
+    res.status(201).json(toResponse(goal));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to create goal" });
@@ -89,6 +98,10 @@ export const updateGoal = async (req: Request, res: Response) => {
   }
   if (!id) {
     return res.status(400).json({ error: "Goal id is required" });
+  }
+  const goalObjectId = parseObjectId(id);
+  if (!goalObjectId) {
+    return res.status(400).json({ error: "Invalid goal id" });
   }
   const ownerId = userId;
 
@@ -127,7 +140,7 @@ export const updateGoal = async (req: Request, res: Response) => {
     }
 
     const result = await collection.findOneAndUpdate(
-      { id, userId: ownerId },
+      { _id: goalObjectId, userId: ownerId },
       { $set: updates },
       { returnDocument: "after" }
     );
@@ -152,11 +165,18 @@ export const deleteGoal = async (req: Request, res: Response) => {
   if (!id) {
     return res.status(400).json({ error: "Goal id is required" });
   }
+  const goalObjectId = parseObjectId(id);
+  if (!goalObjectId) {
+    return res.status(400).json({ error: "Invalid goal id" });
+  }
   const ownerId = userId;
 
   try {
     const collection = await getGoalsCollection();
-    const result = await collection.deleteOne({ id, userId: ownerId });
+    const result = await collection.deleteOne({
+      _id: goalObjectId,
+      userId: ownerId,
+    });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: "Goal not found" });

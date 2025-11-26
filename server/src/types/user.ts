@@ -1,5 +1,7 @@
+import { ObjectId } from "mongodb";
+
 export type UserDocument = {
-  id: string;
+  _id: ObjectId;
   name: string;
   email: string;
   passwordHash: string;
@@ -15,4 +17,3 @@ export type PublicUser = {
   email: string;
   verified: boolean;
 };
-
