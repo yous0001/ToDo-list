@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, UploadApiOptions } from "cloudinary";
 import streamifier from "streamifier";
 
 import { env } from "../config/env";
@@ -21,21 +21,26 @@ export const uploadImageBuffer = async (
     publicId,
   }: {
     folder: string;
-    publicId?: string;
+    publicId?: string | null;
   }
 ): Promise<UploadResult> =>
   new Promise((resolve, reject) => {
+    const options: UploadApiOptions = {
+      folder,
+      overwrite: true,
+      resource_type: "image",
+      transformation: [
+        { width: 600, height: 600, crop: "fill", gravity: "face" },
+        { quality: "auto:good", fetch_format: "auto" },
+      ],
+    };
+
+    if (publicId) {
+      options.public_id = publicId;
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        public_id: publicId,
-        overwrite: true,
-        resource_type: "image",
-        transformation: [
-          { width: 600, height: 600, crop: "fill", gravity: "face" },
-          { quality: "auto:good", fetch_format: "auto" },
-        ],
-      },
+      options,
       (error, result) => {
         if (error || !result) {
           reject(error ?? new Error("Failed to upload image"));

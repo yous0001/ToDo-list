@@ -167,15 +167,15 @@ export const updateProfileDetails = async (req: Request, res: Response) => {
 
   try {
     const users = await getUsersCollection();
-    const result = await users.findOneAndUpdate(
+    const updatedUser = await users.findOneAndUpdate(
       { _id: objectId },
       { $set: updates },
       { returnDocument: "after" }
     );
-    if (!result.value) {
+    if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
     }
-    const profile = await toProfileResponse(result.value);
+    const profile = await toProfileResponse(updatedUser);
     res.json(profile);
   } catch (error) {
     console.error("Failed to update profile", error);
