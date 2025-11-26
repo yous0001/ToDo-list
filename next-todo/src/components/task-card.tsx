@@ -36,7 +36,7 @@ export const TaskCard = ({
 
   return (
     <li
-      className={`group relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 shadow-lg transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-[1.03] hover:shadow-2xl hover:border-white/30 ${
+      className={`group relative overflow-hidden rounded-2xl border border-white/20 bg-white/95 shadow-lg transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform md:hover:scale-[1.03] md:hover:shadow-2xl md:hover:border-white/30 ${
         task.completed ? "opacity-75" : ""
       }`}
     >
@@ -54,7 +54,7 @@ export const TaskCard = ({
             className={`relative z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transform will-change-transform ${
                 task.completed
                 ? "border-emerald-500 bg-emerald-500 text-white shadow-md opacity-100 scale-100"
-                : "border-slate-300 text-transparent opacity-0 scale-90 group-hover:opacity-100 group-hover:border-slate-400 group-hover:scale-100 group-hover:shadow-sm"
+                : "border-slate-300 text-transparent opacity-100 scale-100 md:text-transparent md:opacity-0 md:scale-90 md:group-hover:opacity-100 md:group-hover:border-slate-400 md:group-hover:scale-100 md:group-hover:shadow-sm"
               }`}
               aria-label={
                 task.completed ? "Mark task as incomplete" : "Mark task as done"
@@ -98,17 +98,17 @@ export const TaskCard = ({
       </div>
 
       {/* Expanded Content on Hover */}
-      <div className="relative z-20 max-h-0 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[max-height] group-hover:max-h-96 group-hover:pb-4">
+      <div className="relative z-20 max-h-full pb-4 overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[max-height] md:max-h-0 md:pb-0 md:group-hover:max-h-96 md:group-hover:pb-4">
         <div className="px-4 space-y-4 bg-white/95">
           {/* Description */}
           {task.description && (
-            <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-100 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+            <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 opacity-100 translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:delay-100 md:will-change-[opacity,transform] md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0">
               {task.description}
             </p>
           )}
 
           {/* Date Information */}
-          <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-2 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-150 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+          <div className="grid gap-2 text-xs text-slate-500 sm:grid-cols-2 opacity-100 translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:delay-150 md:will-change-[opacity,transform] md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-slate-700">Started at:</span>
               <span className="text-slate-600">{infoLabel(startedLabel)}</span>
@@ -120,7 +120,7 @@ export const TaskCard = ({
         </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2 pt-2 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-200 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
+          <div className="flex flex-wrap gap-2 pt-2 opacity-100 translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:delay-200 md:will-change-[opacity,transform] md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0">
             <Link
               href={`/tasks/${task.id}`}
               onClick={(e) => e.stopPropagation()}
@@ -195,7 +195,7 @@ export const TaskCard = ({
       {/* Clickable overlay for navigation - only covers compact view */}
       <Link
         href={`/tasks/${task.id}`}
-        className="absolute inset-0 z-0 group-hover:pointer-events-none"
+        className="absolute inset-0 z-0 hidden md:block group-hover:pointer-events-none"
         aria-label={`View details for ${task.title}`}
       />
     </li>
