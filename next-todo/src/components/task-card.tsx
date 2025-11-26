@@ -44,30 +44,30 @@ export const TaskCard = ({
       <div className="relative z-10 p-4">
         <div className="flex items-center gap-3">
           {/* Complete Checkbox - Always visible if completed, hidden otherwise */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onToggleComplete(task.id);
-            }}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleComplete(task.id);
+              }}
             className={`relative z-20 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] transform will-change-transform ${
-              task.completed
+                task.completed
                 ? "border-emerald-500 bg-emerald-500 text-white shadow-md opacity-100 scale-100"
                 : "border-slate-300 text-transparent opacity-0 scale-90 group-hover:opacity-100 group-hover:border-slate-400 group-hover:scale-100 group-hover:shadow-sm"
-            }`}
-            aria-label={
-              task.completed ? "Mark task as incomplete" : "Mark task as done"
-            }
-          >
-            {task.completed ? "✓" : ""}
-          </button>
+              }`}
+              aria-label={
+                task.completed ? "Mark task as incomplete" : "Mark task as done"
+              }
+            >
+              {task.completed ? "✓" : ""}
+            </button>
 
           {/* Title and Timer - Always visible */}
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-semibold text-slate-900 truncate">
-              {task.title}
-            </h2>
+                {task.title}
+              </h2>
             <div className="mt-1.5 flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
                 ⏱️ {formatDuration(seconds)}
@@ -82,16 +82,16 @@ export const TaskCard = ({
                   ✓ Completed
                 </span>
               )}
-              {collectionName && (
-                <span
+                {collectionName && (
+                  <span
                   className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white"
-                  style={{
-                    background: collectionColor ?? "#0f172a",
-                  }}
-                >
-                  {collectionName}
-                </span>
-              )}
+                    style={{
+                      background: collectionColor ?? "#0f172a",
+                    }}
+                  >
+                    {collectionName}
+                  </span>
+                )}
             </div>
           </div>
         </div>
@@ -116,8 +116,8 @@ export const TaskCard = ({
             <div className="flex items-center gap-2">
               <span className="font-semibold text-slate-700">Finished at:</span>
               <span className="text-slate-600">{infoLabel(finishedLabel)}</span>
-            </div>
           </div>
+        </div>
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2 pt-2 opacity-0 translate-y-4 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] delay-200 will-change-[opacity,transform] group-hover:opacity-100 group-hover:translate-y-0">
@@ -129,65 +129,65 @@ export const TaskCard = ({
               <span className="mr-1.5">👁️</span>
               View Task
             </Link>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
                 if (task.running) {
                   onPause(task.id);
                 } else {
                   onStart(task.id);
                 }
-              }}
+            }}
               className={`relative z-30 inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:shadow-lg active:scale-95 ${
-                task.running
+              task.running
                   ? "bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700"
                   : "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700"
-              }`}
-            >
+            }`}
+          >
               <span className="mr-1.5">
                 {task.running ? "⏸️" : task.elapsed > 0 ? "▶️" : "▶️"}
               </span>
               {task.running ? "Pause" : task.elapsed > 0 ? "Resume" : "Start"}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onReset(task.id);
-              }}
-              disabled={task.elapsed === 0 && !task.running}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onReset(task.id);
+            }}
+            disabled={task.elapsed === 0 && !task.running}
               className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform enabled:hover:scale-105 enabled:hover:border-slate-300 enabled:hover:bg-slate-50 enabled:hover:text-slate-800 enabled:hover:shadow-md enabled:active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
+          >
               <span className="mr-1.5">🔄</span>
               Reset
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onEdit(task);
-              }}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onEdit(task);
+            }}
               className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 hover:shadow-md active:scale-95"
-            >
+          >
               <span className="mr-1.5">✏️</span>
-              Edit
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete(task.id);
-              }}
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(task.id);
+            }}
               className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-transparent bg-gradient-to-r from-slate-800 to-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:from-slate-900 hover:to-slate-950 hover:shadow-lg active:scale-95"
-            >
+          >
               <span className="mr-1.5">🗑️</span>
-              Delete
-            </button>
+            Delete
+          </button>
           </div>
         </div>
       </div>

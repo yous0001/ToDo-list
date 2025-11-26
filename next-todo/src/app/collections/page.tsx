@@ -10,6 +10,7 @@ import { Collection } from "@/types/task";
 import { formatDuration, getDisplaySeconds } from "@/utils/time";
 
 const TIMEFRAME_OPTIONS = [
+  { id: "day", label: "This day" },
   { id: "week", label: "This week" },
   { id: "month", label: "This month" },
   { id: "year", label: "This year" },
@@ -21,6 +22,11 @@ type TimeframeId = (typeof TIMEFRAME_OPTIONS)[number]["id"];
 const timeframeStart = (timeframe: TimeframeId) => {
   const now = new Date();
   switch (timeframe) {
+    case "day": {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      start.setHours(0, 0, 0, 0);
+      return start.getTime();
+    }
     case "week": {
       const day = now.getDay();
       const diff = now.getDate() - day + (day === 0 ? -6 : 1);
@@ -420,8 +426,7 @@ export default function CollectionsPage() {
                       Edit
                     </button>
                     <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-700">
-                      {assigned.filter(({ task }) => task.completed).length} /{" "}
-                      {assigned.length} completed
+                      {stats.completed} / {stats.total} completed
                     </span>
                   </footer>
                 </article>

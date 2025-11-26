@@ -354,6 +354,17 @@ export default function TaskDetailPage() {
               </button>
               <button
                 type="button"
+                onClick={() => toggleComplete(task.id)}
+                className={`rounded-2xl px-6 py-3 text-sm font-semibold text-white shadow transition ${
+                  task.completed
+                    ? "bg-emerald-500 hover:bg-emerald-500/90"
+                    : "bg-slate-800 hover:bg-slate-900"
+                }`}
+              >
+                {task.completed ? "Mark as incomplete" : "Mark as complete"}
+              </button>
+              <button
+                type="button"
                 onClick={handleEdit}
                 className="rounded-2xl border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-800"
               >
