@@ -6,9 +6,13 @@ import Link from "next/link";
 import { useTaskManager } from "@/hooks/use-task-manager";
 import { useCollections } from "@/hooks/use-collections";
 import { TaskComposerModal } from "@/components/task-composer-modal";
-import { formatDateTime, formatDuration, getDisplaySeconds } from "@/utils/time";
+import { ClockSelector } from "@/components/clocks/clock-selector";
+import {
+  formatDateTime,
+  formatDuration,
+  getDisplaySeconds,
+} from "@/utils/time";
 import { timestampToDateString } from "@/utils/date";
-import { Task } from "@/types/task";
 import { useAuth } from "@/contexts/auth-context";
 import { SignInRequired } from "@/components/auth/sign-in-required";
 
@@ -73,12 +77,15 @@ export default function TaskDetailPage() {
   // Update form when task changes
   useEffect(() => {
     if (task) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setStartDate(timestampToDateString(task.startDate));
-      setDueDate(timestampToDateString(task.dueDate));
-      setDueToday(false);
-      setSelectedCollectionId(task.collectionId);
+      // Use requestAnimationFrame to avoid synchronous setState in effect
+      requestAnimationFrame(() => {
+        setTitle(task.title);
+        setDescription(task.description);
+        setStartDate(timestampToDateString(task.startDate));
+        setDueDate(timestampToDateString(task.dueDate));
+        setDueToday(false);
+        setSelectedCollectionId(task.collectionId);
+      });
     }
   }, [task]);
 
@@ -165,9 +172,7 @@ export default function TaskDetailPage() {
       <div className="relative px-4 py-10 font-sans sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl">
           <div className="rounded-[28px] border border-rose-200/60 bg-rose-500/10 p-10 text-center text-rose-50 backdrop-blur">
-            <p className="text-lg font-semibold">
-              {error || "Task not found"}
-            </p>
+            <p className="text-lg font-semibold">{error || "Task not found"}</p>
             <Link
               href="/tasks"
               className="mt-4 inline-block rounded-full border border-rose-50/40 px-5 py-2 text-sm font-semibold text-white transition hover:border-white"
@@ -229,20 +234,8 @@ export default function TaskDetailPage() {
               </button>
             </div>
 
-            {/* Main Clock Display */}
-            <div className="rounded-2xl border-4 border-indigo-500 bg-gradient-to-br from-indigo-50 to-purple-50 p-8 text-center shadow-lg">
-              <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-                Time Elapsed
-              </p>
-              <div className="mt-4 text-6xl font-bold text-indigo-900">
-                {formatDuration(seconds)}
-              </div>
-              {task.running && (
-                <p className="mt-2 text-sm font-semibold text-amber-600">
-                  ⏱️ Timer Running
-                </p>
-              )}
-            </div>
+            {/* Main Clock Display with Selector */}
+            <ClockSelector seconds={seconds} isRunning={task.running} />
 
             {/* Time Passed Clock */}
             <div className="grid gap-4 md:grid-cols-2">
@@ -333,7 +326,11 @@ export default function TaskDetailPage() {
               <button
                 type="button"
                 onClick={() => {
-                  task.running ? pauseTimer(task.id) : startTimer(task.id);
+                  if (task.running) {
+                    pauseTimer(task.id);
+                  } else {
+                    startTimer(task.id);
+                  }
                 }}
                 className={`rounded-2xl px-6 py-3 text-sm font-semibold text-white shadow transition ${
                   task.running
@@ -398,4 +395,3 @@ export default function TaskDetailPage() {
     </div>
   );
 }
-
