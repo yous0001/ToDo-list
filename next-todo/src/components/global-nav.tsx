@@ -10,7 +10,6 @@ import { UserMenu } from "@/components/user-menu";
 import { AppLogo } from "@/components/app-logo";
 
 const NAV_LINKS = [
-  { href: "/", label: "Home" },
   { href: "/tasks", label: "Tasks" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/goals", label: "Goals" },
