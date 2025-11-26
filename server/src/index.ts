@@ -7,6 +7,7 @@ import { taskRouter } from "./routes/taskRoutes";
 import { goalRouter } from "./routes/goalRoutes";
 import { collectionRouter } from "./routes/collectionRoutes";
 import { authRouter } from "./routes/authRoutes";
+import { profileRouter } from "./routes/profileRoutes";
 import { requireAuth } from "./middleware/requireAuth";
 
 const app = express();
@@ -26,6 +27,7 @@ app.use("/auth", authRouter);
 app.use("/tasks", requireAuth, taskRouter);
 app.use("/goals", requireAuth, goalRouter);
 app.use("/collections", requireAuth, collectionRouter);
+app.use("/profile", requireAuth, profileRouter);
 
 const startServer = async () => {
   await connectToDatabase();

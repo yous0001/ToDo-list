@@ -15,6 +15,9 @@ const required = [
   "MAIL_PORT",
   "MAIL_USER",
   "MAIL_PASS",
+  "CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
 ] as const;
 
 required.forEach((key) => {
@@ -36,5 +39,11 @@ export const env = {
     port: parseInt(process.env.MAIL_PORT ?? "587", 10),
     user: process.env.MAIL_USER as string,
     pass: process.env.MAIL_PASS as string,
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME as string,
+    apiKey: process.env.CLOUDINARY_API_KEY as string,
+    apiSecret: process.env.CLOUDINARY_API_SECRET as string,
+    baseFolder: process.env.CLOUDINARY_BASE_FOLDER ?? "task-management",
   },
 };

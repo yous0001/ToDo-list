@@ -15,6 +15,12 @@ const toPublicUser = (user: UserDocument): PublicUser => ({
   name: user.name,
   email: user.email,
   verified: user.verified,
+  avatarUrl: user.avatarUrl ?? null,
+  role: user.role ?? null,
+  location: user.location ?? null,
+  bio: user.bio ?? null,
+  timezone: user.timezone ?? null,
+  website: user.website ?? null,
 });
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
@@ -66,6 +72,13 @@ export const register = async (req: Request, res: Response) => {
       verificationToken,
       createdAt: timestamp,
       updatedAt: timestamp,
+      avatarUrl: null,
+      avatarPublicId: null,
+      role: null,
+      location: null,
+      bio: null,
+      timezone: null,
+      website: null,
     };
 
     const verifyUrl = `${env.appBaseUrl}/verify?token=${verificationToken}`;

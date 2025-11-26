@@ -10,15 +10,28 @@ type RequestOptions = Omit<RequestInit, "headers"> & {
   headers?: Record<string, string>;
 };
 
+type ProfileUpdatePayload = {
+  name?: string;
+  role?: string | null;
+  location?: string | null;
+  timezone?: string | null;
+  website?: string | null;
+  bio?: string | null;
+};
+
 export async function apiRequest<T>(
   path: string,
   options: RequestOptions = {}
 ): Promise<T> {
   const { parseJson = true, headers, body, auth = false, ...rest } = options;
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
   const finalHeaders: Record<string, string> = {
-    "Content-Type": "application/json",
     ...(headers ?? {}),
   };
+  if (!isFormData && !finalHeaders["Content-Type"]) {
+    finalHeaders["Content-Type"] = "application/json";
+  }
 
   if (auth) {
     const token = getAuthToken();
@@ -28,11 +41,16 @@ export async function apiRequest<T>(
     finalHeaders.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const requestInit: RequestInit = {
     headers: finalHeaders,
-    body,
     ...rest,
-  });
+  };
+
+  if (body !== undefined) {
+    requestInit.body = body as BodyInit;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, requestInit);
 
   if (!response.ok) {
     let message = response.statusText;
@@ -149,4 +167,26 @@ export const api = {
     apiRequest("/auth/me", {
       auth: true,
     }),
+  getProfile: () =>
+    apiRequest("/profile", {
+      auth: true,
+    }),
+  updateProfile: (payload: ProfileUpdatePayload) =>
+    apiRequest("/profile", {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+      auth: true,
+    }),
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    return apiRequest<{ avatarUrl: string; message: string }>(
+      "/profile/avatar",
+      {
+        method: "POST",
+        body: formData,
+        auth: true,
+      }
+    );
+  },
 };
