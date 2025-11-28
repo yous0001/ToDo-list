@@ -6,10 +6,12 @@ import "@pqina/flip/dist/flip.min.css";
 import type { TickInstance } from "@pqina/flip";
 
 import { FullscreenClockCard } from "./fullscreen-clock-card";
+import type { BackgroundTheme } from "./clock-backgrounds";
 
 type FlipClockProps = {
   seconds: number;
   isRunning?: boolean;
+  background?: BackgroundTheme;
 };
 
 const formatTimeParts = (seconds: number) => {
@@ -27,7 +29,11 @@ const formatTimeParts = (seconds: number) => {
 
 type TickModule = typeof import("@pqina/flip").default;
 
-export const FlipClock = ({ seconds, isRunning = false }: FlipClockProps) => {
+export const FlipClock = ({
+  seconds,
+  isRunning = false,
+  background,
+}: FlipClockProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const flipInstanceRef = useRef<TickInstance | null>(null);
   const tickModuleRef = useRef<TickModule | null>(null);
@@ -90,10 +96,7 @@ export const FlipClock = ({ seconds, isRunning = false }: FlipClockProps) => {
 
   return (
     <FullscreenClockCard
-      baseClassName="rounded-2xl border-2 border-slate-300/50 bg-linear-to-br from-slate-900 via-slate-950 to-slate-900 p-6 shadow-xl"
-      fullscreenClassName="flex min-h-screen w-full flex-col items-center justify-center gap-6 border bg-linear-to-br from-slate-900 via-slate-950 to-slate-900 p-8 text-center shadow-none"
-      titleClassName="text-center text-xs font-bold uppercase tracking-[0.3em] text-slate-300"
-      fullscreenTitleClassName="text-center text-sm font-bold uppercase tracking-[0.45em] text-slate-200"
+      background={background}
       footer={({ isFullscreen }) =>
         isRunning ? (
           <div className="mt-4 flex items-center justify-center gap-2">

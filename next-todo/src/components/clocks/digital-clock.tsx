@@ -3,15 +3,18 @@
 import { useMemo } from "react";
 
 import { FullscreenClockCard } from "./fullscreen-clock-card";
+import type { BackgroundTheme } from "./clock-backgrounds";
 
 type DigitalClockProps = {
   seconds: number;
   isRunning?: boolean;
+  background?: BackgroundTheme;
 };
 
 export const DigitalClock = ({
   seconds,
   isRunning = false,
+  background,
 }: DigitalClockProps) => {
   const { hours, minutes, secs } = useMemo(() => {
     const totalSeconds = Math.floor(seconds); // Ensure integer
@@ -27,10 +30,7 @@ export const DigitalClock = ({
 
   return (
     <FullscreenClockCard
-      baseClassName="rounded-2xl border-4 border-slate-900 bg-gradient-to-br from-slate-900 to-slate-800 p-8 text-center shadow-2xl"
-      fullscreenClassName="flex min-h-screen w-full flex-col items-center justify-center gap-8 border bg-gradient-to-br from-slate-900 to-black p-10 text-center shadow-none"
-      titleClassName="mb-6 text-xs font-semibold uppercase tracking-widest text-slate-400"
-      fullscreenTitleClassName="mb-6 text-sm font-semibold uppercase tracking-[0.5em] text-slate-200"
+      background={background}
       footer={({ isFullscreen }) =>
         isRunning ? (
           <div className="mt-6 flex items-center justify-center gap-2">

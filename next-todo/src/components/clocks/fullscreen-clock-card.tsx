@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import type { BackgroundTheme } from "./clock-backgrounds";
 
 type FullscreenElement = HTMLElement & {
   webkitRequestFullscreen?: () => Promise<void>;
@@ -30,7 +31,8 @@ type RenderContext = {
 
 type FullscreenClockCardProps = {
   title?: string;
-  baseClassName: string;
+  background?: BackgroundTheme;
+  baseClassName?: string;
   fullscreenClassName?: string;
   titleClassName?: string;
   fullscreenTitleClassName?: string;
@@ -44,11 +46,12 @@ const DEFAULT_BUTTON_CLASSES =
 
 export const FullscreenClockCard = ({
   title = "Time Elapsed",
+  background,
   baseClassName,
   fullscreenClassName,
   titleClassName,
   fullscreenTitleClassName,
-  buttonClassName = DEFAULT_BUTTON_CLASSES,
+  buttonClassName,
   children,
   footer,
 }: FullscreenClockCardProps) => {
@@ -109,16 +112,27 @@ export const FullscreenClockCard = ({
   };
 
   const wrapperClasses = useMemo(() => {
+    if (background) {
+      return [
+        "relative",
+        isFullscreen ? background.fullscreenClasses : background.baseClasses,
+      ].join(" ");
+    }
     const fullscreenClasses =
       fullscreenClassName ??
       "flex min-h-screen w-full flex-col items-center justify-center gap-6 border bg-slate-900 p-8 text-center shadow-none";
     return [
       "relative",
-      isFullscreen ? fullscreenClasses : baseClassName,
+      isFullscreen ? fullscreenClasses : baseClassName ?? "",
     ].join(" ");
-  }, [baseClassName, fullscreenClassName, isFullscreen]);
+  }, [background, baseClassName, fullscreenClassName, isFullscreen]);
 
   const headingClasses = useMemo(() => {
+    if (background) {
+      return isFullscreen
+        ? background.fullscreenTitleClasses
+        : background.titleClasses;
+    }
     const base =
       titleClassName ??
       "text-center text-xs font-bold uppercase tracking-[0.3em] text-slate-600";
@@ -126,14 +140,18 @@ export const FullscreenClockCard = ({
       fullscreenTitleClassName ??
       "text-center text-sm font-bold uppercase tracking-[0.45em] text-white";
     return isFullscreen ? fullscreen : base;
-  }, [fullscreenTitleClassName, isFullscreen, titleClassName]);
+  }, [background, fullscreenTitleClassName, isFullscreen, titleClassName]);
+
+  const finalButtonClasses = useMemo(() => {
+    return buttonClassName ?? background?.buttonClasses ?? DEFAULT_BUTTON_CLASSES;
+  }, [background, buttonClassName]);
 
   return (
     <div ref={wrapperRef} className={wrapperClasses}>
       <button
         type="button"
         onClick={handleToggle}
-        className={buttonClassName}
+        className={finalButtonClasses}
         aria-label={isFullscreen ? "Exit fullscreen" : "View clock fullscreen"}
       >
         {isFullscreen ? "✕" : "⛶"}
