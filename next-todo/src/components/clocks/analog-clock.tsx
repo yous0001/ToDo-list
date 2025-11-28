@@ -41,9 +41,20 @@ type AnalogStyle = {
   centerDotColor: string;
 };
 
-const BASE_NUMBERS = Array.from({ length: 12 }).map((_v, index) =>
-  (index + 1).toString()
-);
+const BASE_NUMBERS = [
+  "12",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+];
 const ROMAN_NUMBERS = [
   "XII",
   "I",
@@ -241,7 +252,9 @@ export const AnalogClock = ({
         isRunning ? (
           <p
             className={`mt-4 font-semibold text-amber-600 ${
-              isFullscreen ? "text-base tracking-[0.4em]" : "text-sm animate-pulse"
+              isFullscreen
+                ? "text-base tracking-[0.4em]"
+                : "text-sm animate-pulse"
             }`}
           >
             ⏱️ Timer Running
@@ -353,10 +366,12 @@ export const AnalogClock = ({
                   x1={center}
                   y1={center}
                   x2={
-                    center + radius * 0.5 * Math.cos((hourAngle * Math.PI) / 180)
+                    center +
+                    radius * 0.5 * Math.cos((hourAngle * Math.PI) / 180)
                   }
                   y2={
-                    center + radius * 0.5 * Math.sin((hourAngle * Math.PI) / 180)
+                    center +
+                    radius * 0.5 * Math.sin((hourAngle * Math.PI) / 180)
                   }
                   stroke={style.hourHandColor}
                   strokeWidth={6}
@@ -433,4 +448,3 @@ export const AnalogClock = ({
     </FullscreenClockCard>
   );
 };
-
