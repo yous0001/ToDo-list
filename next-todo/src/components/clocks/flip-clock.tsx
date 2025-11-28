@@ -1,309 +1,218 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import "@pqina/flip/dist/flip.min.css";
+import type { TickInstance } from "@pqina/flip";
 
 type FlipClockProps = {
   seconds: number;
   isRunning?: boolean;
 };
 
-const FlipDigit = ({
-  value,
-  label,
-  previousValue,
-}: {
-  value: string;
-  label: string;
-  previousValue?: string;
-}) => {
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [displayValue, setDisplayValue] = useState(value);
-
-  useEffect(() => {
-    if (previousValue !== undefined && previousValue !== value) {
-      // Start flip animation
-      const rafId = requestAnimationFrame(() => {
-        setIsFlipping(true);
-
-        // Halfway through animation, update the value
-        const timeout = setTimeout(() => {
-          setDisplayValue(value);
-        }, 350); // Half of 700ms animation
-
-        // After animation completes, reset
-        const resetTimeout = setTimeout(() => {
-          setIsFlipping(false);
-        }, 700);
-
-        return () => {
-          clearTimeout(timeout);
-          clearTimeout(resetTimeout);
-        };
-      });
-
-      return () => {
-        cancelAnimationFrame(rafId);
-      };
-    } else {
-      requestAnimationFrame(() => {
-        setDisplayValue(value);
-        setIsFlipping(false);
-      });
-    }
-  }, [value, previousValue]);
-
-  return (
-    <div className="flex flex-col items-center">
-      <div
-        className="relative"
-        style={{
-          perspective: "800px",
-          perspectiveOrigin: "center center",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {/* Main flip card container */}
-        <div className="relative w-16 h-20">
-          {/* Outer shadow frame */}
-          <div className="absolute -inset-1 bg-slate-900/40 rounded-md blur-sm"></div>
-
-          {/* Card container with gap in middle */}
-          <div className="relative w-full h-full">
-            {/* ===== TOP HALF ===== */}
-            <div className="absolute top-0 left-0 right-0 h-[39px] z-10">
-              {/* Static top half background */}
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 rounded-t-md border border-slate-950 border-b-0 shadow-lg overflow-hidden">
-                {/* Current digit - top half only (clipped) */}
-                <div className="absolute inset-0 flex items-start justify-center pt-1 overflow-hidden">
-                  <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                    {displayValue}
-                  </span>
-                </div>
-                {/* Top shine effect */}
-                <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-              </div>
-
-              {/* Flipping top half - appears during animation */}
-              {isFlipping && (
-                <div
-                  className="absolute inset-0 origin-bottom rounded-t-md z-20"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    animation:
-                      "flipTopDown 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-                    willChange: "transform, opacity, filter",
-                  }}
-                >
-                  {/* Front face - old value top half */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 rounded-t-md border border-slate-950 border-b-0 shadow-lg overflow-hidden"
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    <div className="absolute inset-0 flex items-start justify-center pt-1 overflow-hidden">
-                      <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                        {previousValue}
-                      </span>
-                    </div>
-                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                  </div>
-
-                  {/* Back face - new value bottom half (will be visible when flipped) */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800 rounded-t-md shadow-lg overflow-hidden"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: "rotateX(180deg)",
-                    }}
-                  >
-                    <div className="absolute inset-0 flex items-end justify-center pb-1 overflow-hidden">
-                      <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                        {value}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ===== GAP / DIVIDER ===== */}
-            <div className="absolute top-[39px] left-0 right-0 h-[2px] bg-slate-950 z-30 shadow-md"></div>
-
-            {/* ===== BOTTOM HALF ===== */}
-            <div className="absolute bottom-0 left-0 right-0 h-[39px] z-10">
-              {/* Static bottom half background */}
-              <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800 rounded-b-md border border-slate-950 border-t-0 shadow-lg overflow-hidden">
-                {/* Current digit - bottom half only (clipped) */}
-                <div className="absolute inset-0 flex items-end justify-center pb-1 overflow-hidden">
-                  <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                    {displayValue}
-                  </span>
-                </div>
-                {/* Bottom shadow effect */}
-                <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
-              </div>
-
-              {/* Flipping bottom half - appears during animation */}
-              {isFlipping && (
-                <div
-                  className="absolute inset-0 origin-top rounded-b-md z-20"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    animation:
-                      "flipBottomUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-                    willChange: "transform, opacity, filter",
-                  }}
-                >
-                  {/* Front face - old value bottom half */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800 rounded-b-md border border-slate-950 border-t-0 shadow-lg overflow-hidden"
-                    style={{ backfaceVisibility: "hidden" }}
-                  >
-                    <div className="absolute inset-0 flex items-end justify-center pb-1 overflow-hidden">
-                      <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                        {previousValue}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-black/30 to-transparent pointer-events-none"></div>
-                  </div>
-
-                  {/* Back face - new value top half (will be visible when flipped) */}
-                  <div
-                    className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 rounded-b-md shadow-lg overflow-hidden"
-                    style={{
-                      backfaceVisibility: "hidden",
-                      transform: "rotateX(-180deg)",
-                    }}
-                  >
-                    <div className="absolute inset-0 flex items-start justify-center pt-1 overflow-hidden">
-                      <span className="text-7xl font-bold text-white font-mono tabular-nums leading-none select-none">
-                        {value}
-                      </span>
-                    </div>
-                    <div className="absolute top-0 left-0 right-0 h-4 bg-gradient-to-b from-white/10 to-transparent pointer-events-none"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-      {label && (
-        <span className="mt-2 text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-          {label}
-        </span>
-      )}
-    </div>
-  );
+type FullscreenElement = HTMLElement & {
+  webkitRequestFullscreen?: () => Promise<void>;
+  mozRequestFullScreen?: () => Promise<void>;
+  msRequestFullscreen?: () => Promise<void>;
 };
 
+type FullscreenDocument = Document & {
+  webkitFullscreenElement?: Element | null;
+  mozFullScreenElement?: Element | null;
+  msFullscreenElement?: Element | null;
+  webkitExitFullscreen?: () => Promise<void>;
+  mozCancelFullScreen?: () => Promise<void>;
+  msExitFullscreen?: () => Promise<void>;
+};
+
+const formatTimeParts = (seconds: number) => {
+  const totalSeconds = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const secs = Math.floor(totalSeconds % 60);
+
+  const hh = hours.toString().padStart(2, "0");
+  const mm = minutes.toString().padStart(2, "0");
+  const ss = secs.toString().padStart(2, "0");
+
+  return `${hh}:${mm}:${ss}`;
+};
+
+type TickModule = typeof import("@pqina/flip").default;
+
 export const FlipClock = ({ seconds, isRunning = false }: FlipClockProps) => {
-  // Track previous values for each digit pair independently
-  const [prevHours, setPrevHours] = useState<string | null>(null);
-  const [prevMinutes, setPrevMinutes] = useState<string | null>(null);
-  const [prevSecs, setPrevSecs] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const flipInstanceRef = useRef<TickInstance | null>(null);
+  const tickModuleRef = useRef<TickModule | null>(null);
+  const initialValueRef = useRef<string>(formatTimeParts(seconds));
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const { hours, minutes, secs } = useMemo(() => {
-    const totalSeconds = Math.floor(seconds); // Ensure integer
-    const h = Math.floor(totalSeconds / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = Math.floor(totalSeconds % 60);
+  const timeValue = useMemo(() => formatTimeParts(seconds), [seconds]);
 
-    return {
-      hours: h.toString().padStart(2, "0"),
-      minutes: m.toString().padStart(2, "0"),
-      secs: s.toString().padStart(2, "0"),
-    };
-  }, [seconds]);
-
-  // Track previous values independently for each digit pair
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPrevHours(hours);
-      setPrevMinutes(minutes);
-      setPrevSecs(secs);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [hours, minutes, secs]);
+    let cancelled = false;
+    const init = async () => {
+      if (!containerRef.current || flipInstanceRef.current) {
+        return;
+      }
+      if (!tickModuleRef.current) {
+        const flipModule = await import("@pqina/flip");
+        if (cancelled) {
+          return;
+        }
+        tickModuleRef.current = flipModule.default;
+      }
+
+      const Tick = tickModuleRef.current;
+      if (!Tick || !containerRef.current) {
+        return;
+      }
+      const instance = Tick.DOM.create(containerRef.current, {
+        value: initialValueRef.current,
+      });
+
+      if (instance && !cancelled) {
+        flipInstanceRef.current = instance;
+      }
+    };
+
+    void init();
+
+    return () => {
+      cancelled = true;
+      flipInstanceRef.current?.destroy();
+      flipInstanceRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const instance = flipInstanceRef.current;
+    if (!instance) {
+      return;
+    }
+    instance.value = timeValue;
+    instance.root?.setAttribute("aria-label", timeValue);
+  }, [timeValue]);
+
+  useEffect(() => {
+    const updateState = () => {
+      const element = wrapperRef.current;
+      const fsDoc = document as FullscreenDocument;
+      const fullscreenElement =
+        fsDoc.fullscreenElement ??
+        fsDoc.webkitFullscreenElement ??
+        fsDoc.mozFullScreenElement ??
+        fsDoc.msFullscreenElement;
+      setIsFullscreen(Boolean(element && fullscreenElement === element));
+    };
+
+    document.addEventListener("fullscreenchange", updateState);
+    document.addEventListener("webkitfullscreenchange", updateState);
+    document.addEventListener("mozfullscreenchange", updateState);
+    document.addEventListener("MSFullscreenChange", updateState);
+    return () => {
+      document.removeEventListener("fullscreenchange", updateState);
+      document.removeEventListener("webkitfullscreenchange", updateState);
+      document.removeEventListener("mozfullscreenchange", updateState);
+      document.removeEventListener("MSFullscreenChange", updateState);
+    };
+  }, []);
+
+  const handleFullscreenToggle = () => {
+    const element = wrapperRef.current;
+    if (!element) {
+      return;
+    }
+    if (isFullscreen) {
+      const exitFullscreen =
+        document.exitFullscreen ||
+        (document as FullscreenDocument).webkitExitFullscreen ||
+        (document as FullscreenDocument).mozCancelFullScreen ||
+        (document as FullscreenDocument).msExitFullscreen;
+      if (typeof exitFullscreen === "function") {
+        exitFullscreen.call(document);
+      }
+      return;
+    }
+    const target = element as FullscreenElement;
+    const requestFullscreen =
+      element.requestFullscreen ||
+      target.webkitRequestFullscreen ||
+      target.mozRequestFullScreen ||
+      target.msRequestFullscreen;
+    if (typeof requestFullscreen === "function") {
+      requestFullscreen.call(element);
+    }
+  };
+
+  const wrapperClasses = [
+    "relative bg-linear-to-br from-slate-900 via-slate-950 to-slate-900 border-slate-300/50",
+    isFullscreen
+      ? "flex min-h-screen w-full flex-col items-center justify-center gap-6 border p-8 text-center shadow-none"
+      : "rounded-2xl border-2 p-6 shadow-xl",
+  ].join(" ");
+
+  const clockStyle = useMemo(() => {
+    const fullscreenFontSize = "clamp(3rem, min(8vw, 14vh), 11rem)";
+    return {
+      fontSize: isFullscreen
+        ? fullscreenFontSize
+        : "clamp(2.75rem, 5vw, 4.75rem)",
+      letterSpacing: isFullscreen ? "0.18em" : "0.08em",
+      maxWidth: isFullscreen ? "min(92vw, 1600px)" : undefined,
+    };
+  }, [isFullscreen]);
+
+  const titleClasses = [
+    "text-center font-bold uppercase text-slate-300",
+    isFullscreen
+      ? "text-sm md:text-base tracking-[0.45em]"
+      : "text-xs tracking-[0.3em]",
+  ].join(" ");
+
+  const runningTextClasses = [
+    "font-semibold uppercase text-emerald-300",
+    isFullscreen ? "text-sm tracking-[0.35em]" : "text-xs tracking-[0.25em]",
+  ].join(" ");
 
   return (
-    <div className="rounded-2xl border-2 border-slate-300/50 bg-gradient-to-br from-slate-100 to-slate-200 p-8 shadow-xl">
-      <p className="mb-8 text-center text-xs font-bold uppercase tracking-widest text-slate-600">
-        Time Elapsed
-      </p>
-      <div className="flex items-center justify-center gap-4">
-        {/* Hours - two digits */}
-        <div className="flex gap-1">
-          <FlipDigit
-            value={hours[0]}
-            label=""
-            previousValue={
-              prevHours && prevHours[0] !== hours[0] ? prevHours[0] : undefined
-            }
-          />
-          <FlipDigit
-            value={hours[1]}
-            label=""
-            previousValue={
-              prevHours && prevHours[1] !== hours[1] ? prevHours[1] : undefined
-            }
-          />
+    <div ref={wrapperRef} className={wrapperClasses}>
+      <button
+        type="button"
+        onClick={handleFullscreenToggle}
+        className="absolute right-4 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/30 text-xs font-semibold text-white/80 backdrop-blur-sm transition hover:border-white/60 hover:bg-black/50"
+        aria-label={
+          isFullscreen ? "Exit fullscreen" : "View flip clock in fullscreen"
+        }
+      >
+        {isFullscreen ? "✕" : "⛶"}
+      </button>
+      <p className={`mb-4 ${titleClasses}`}>Time Elapsed</p>
+      <div className="flex w-full items-center justify-center px-4 overflow-hidden">
+        <div
+          ref={containerRef}
+          className="tick flip-clock text-white uppercase"
+          data-value={timeValue}
+          aria-label={timeValue}
+          data-credits="false"
+          style={clockStyle}
+        >
+          <div
+            data-repeat="true"
+            data-layout="horizontal fit"
+            aria-hidden="true"
+          >
+            <div data-view="flip" />
+          </div>
         </div>
-        <div className="text-4xl font-bold text-slate-700 mb-1">:</div>
-        {/* Minutes - two digits */}
-        <div className="flex gap-1">
-          <FlipDigit
-            value={minutes[0]}
-            label=""
-            previousValue={
-              prevMinutes && prevMinutes[0] !== minutes[0]
-                ? prevMinutes[0]
-                : undefined
-            }
-          />
-          <FlipDigit
-            value={minutes[1]}
-            label=""
-            previousValue={
-              prevMinutes && prevMinutes[1] !== minutes[1]
-                ? prevMinutes[1]
-                : undefined
-            }
-          />
-        </div>
-        <div className="text-4xl font-bold text-slate-700 mb-1">:</div>
-        {/* Seconds - two digits */}
-        <div className="flex gap-1">
-          <FlipDigit
-            value={secs[0]}
-            label=""
-            previousValue={
-              prevSecs && prevSecs[0] !== secs[0] ? prevSecs[0] : undefined
-            }
-          />
-          <FlipDigit
-            value={secs[1]}
-            label=""
-            previousValue={
-              prevSecs && prevSecs[1] !== secs[1] ? prevSecs[1] : undefined
-            }
-          />
-        </div>
-      </div>
-      <div className="mt-5 flex items-center justify-center gap-12 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-        <span>Hours</span>
-        <span>Minutes</span>
-        <span>Seconds</span>
       </div>
       {isRunning && (
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <div className="relative">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-amber-500"></div>
-            <div className="absolute inset-0 h-2 w-2 animate-ping rounded-full bg-amber-400 opacity-75"></div>
-          </div>
-          <p className="text-xs font-bold text-amber-600 animate-pulse">
-            ⏱️ Timer Running
-          </p>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <span className="relative inline-flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span className={runningTextClasses}>Timer running</span>
         </div>
       )}
     </div>
