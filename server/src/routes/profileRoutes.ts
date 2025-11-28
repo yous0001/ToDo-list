@@ -22,3 +22,4 @@ profileRouter.post("/avatar", upload.single("avatar"), uploadProfileAvatar);
 
 export { profileRouter };
 
+

@@ -6,11 +6,7 @@ import {
   getTasksCollection,
   getUsersCollection,
 } from "../db/client";
-import {
-  ProfileStats,
-  UserDocument,
-  UserProfileResponse,
-} from "../types/user";
+import { ProfileStats, UserDocument, UserProfileResponse } from "../types/user";
 import { uploadImageBuffer, deleteImage } from "../lib/cloudinary";
 import { env } from "../config/env";
 
@@ -25,25 +21,27 @@ const buildStats = async (userId: string): Promise<ProfileStats> => {
   const tasksCollection = await getTasksCollection();
   const goalsCollection = await getGoalsCollection();
 
-  const [totalTasks, completedTasks, elapsedSummary, goalsAchieved, goalsActive] =
-    await Promise.all([
-      tasksCollection.countDocuments({ userId }),
-      tasksCollection.countDocuments({ userId, completed: true }),
-      tasksCollection
-        .aggregate<{ _id: null; totalElapsed: number }>([
-          { $match: { userId } },
-          { $group: { _id: null, totalElapsed: { $sum: "$elapsed" } } },
-        ])
-        .toArray(),
-      goalsCollection.countDocuments({ userId, status: "achieved" }),
-      goalsCollection.countDocuments({ userId, status: { $in: ["pending"] } }),
-    ]);
+  const [
+    totalTasks,
+    completedTasks,
+    elapsedSummary,
+    goalsAchieved,
+    goalsActive,
+  ] = await Promise.all([
+    tasksCollection.countDocuments({ userId }),
+    tasksCollection.countDocuments({ userId, completed: true }),
+    tasksCollection
+      .aggregate<{ _id: null; totalElapsed: number }>([
+        { $match: { userId } },
+        { $group: { _id: null, totalElapsed: { $sum: "$elapsed" } } },
+      ])
+      .toArray(),
+    goalsCollection.countDocuments({ userId, status: "achieved" }),
+    goalsCollection.countDocuments({ userId, status: { $in: ["pending"] } }),
+  ]);
 
   const totalElapsedSeconds = elapsedSummary[0]?.totalElapsed ?? 0;
-  const focusMinutes = Math.max(
-    0,
-    Math.round(totalElapsedSeconds / 60)
-  );
+  const focusMinutes = Math.max(0, Math.round(totalElapsedSeconds / 60));
 
   return {
     totalTasks,
@@ -208,7 +206,10 @@ export const uploadProfileAvatar = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const folder = `${env.cloudinary.baseFolder.replace(/\/$/, "")}/users/${userId}`;
+    const folder = `${env.cloudinary.baseFolder.replace(
+      /\/$/,
+      ""
+    )}/users/${userId}`;
     const uploadResult = await uploadImageBuffer(file.buffer, {
       folder,
       publicId: "avatar",
@@ -238,4 +239,3 @@ export const uploadProfileAvatar = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to upload avatar" });
   }
 };
-
