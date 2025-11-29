@@ -38,14 +38,13 @@ export const GlobalNav = () => {
     <header
       className={`sticky top-0 z-30 border-b border-white/15 ${theme.nav} backdrop-blur-xl`}
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 md:flex-row md:flex-wrap md:items-center">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-2.5 md:flex-row md:flex-wrap md:items-center">
         <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
           <Link
             href="/"
-            className="flex items-center gap-3 text-lg font-semibold text-white transition hover:text-indigo-300"
+            className="flex items-center text-lg font-semibold text-white transition hover:opacity-80"
           >
-            <AppLogo size={46} />
-            Smart Todo Tracker
+            <AppLogo size={28} />
           </Link>
 
           <button

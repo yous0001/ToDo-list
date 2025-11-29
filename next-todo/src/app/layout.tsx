@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Todo Tracker",
+  title: "Planora",
   description:
     "Plan rich tasks, track focus sessions, and gain insights across every device.",
 };

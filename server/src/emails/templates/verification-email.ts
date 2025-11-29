@@ -9,7 +9,7 @@ export const buildVerificationEmail = ({
   name,
   verifyUrl,
 }: VerificationEmailParams) => {
-  const subject = "Verify your Smart Todo account";
+  const subject = "Verify your Planora account";
 
   const html = `
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#0f172a;padding:32px 0;">
@@ -33,7 +33,7 @@ export const buildVerificationEmail = ({
                   <path d="M30 15c0-2.21-1.79-4-4-4h-3v12h7V15z" fill="#fde68a" opacity=".85" />
                 </svg>
               </div>
-              <h1 style="margin:24px 0 8px;font-size:28px;">Welcome to Smart Todo</h1>
+              <h1 style="margin:24px 0 8px;font-size:28px;">Welcome to Planora</h1>
               <p style="margin:0;font-size:16px;color:#475569;">Hi ${name}, let’s confirm it’s really you.</p>
             </td>
           </tr>
@@ -57,7 +57,7 @@ export const buildVerificationEmail = ({
           </tr>
           <tr>
             <td style="padding-top:32px;text-align:center;font-size:13px;color:#94a3b8;">
-              Smart Todo • Focused productivity, beautifully tracked.
+              Planora • Focused productivity, beautifully tracked.
             </td>
           </tr>
         </table>
@@ -66,7 +66,7 @@ export const buildVerificationEmail = ({
   </table>
   `;
 
-  const text = `Welcome to Smart Todo, ${name}!
+  const text = `Welcome to Planora, ${name}!
 
 Verify your email: ${verifyUrl}
 

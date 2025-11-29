@@ -37,9 +37,9 @@ export default function RegisterPage() {
       <div className="mx-auto max-w-xl rounded-[32px] border border-white/15 bg-white/10 p-8 text-white shadow-2xl backdrop-blur">
         <div className="space-y-3 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-white/70">
-            Join the flow
+            Join Planora
           </p>
-          <h1 className="text-4xl font-bold">Create your Smart Todo account</h1>
+          <h1 className="text-4xl font-bold">Create your Planora account</h1>
           <p className="text-sm text-white/70">
             Plan tasks, track focus sessions, and stay accountable.
           </p>

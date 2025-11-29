@@ -39,7 +39,7 @@ export default function HomePage() {
             Focused productivity
           </p>
           <h1 className="mt-2 text-5xl font-bold tracking-tight sm:text-6xl">
-            Smart Todo Tracker
+            Planora
           </h1>
           <p className="mt-4 text-lg text-white/90 sm:text-xl">
             Capture tasks, track time, and achieve more with data-driven
