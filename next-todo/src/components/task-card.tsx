@@ -94,6 +94,17 @@ export const TaskCard = ({
                 )}
             </div>
           </div>
+
+          {/* View Task Button - Always visible on the right */}
+          <Link
+            href={`/tasks/${task.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="relative z-30 shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl border-2 border-indigo-300 bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:border-indigo-400 hover:from-indigo-600 hover:to-indigo-700 hover:shadow-lg active:scale-95"
+          >
+            <span className="text-sm">👁️</span>
+            <span>View Task</span>
+            <span className="text-xs opacity-80">→</span>
+          </Link>
         </div>
       </div>
 
@@ -121,14 +132,6 @@ export const TaskCard = ({
 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-2 pt-2 opacity-100 translate-y-0 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] md:delay-200 md:will-change-[opacity,transform] md:opacity-0 md:translate-y-4 md:group-hover:opacity-100 md:group-hover:translate-y-0">
-            <Link
-              href={`/tasks/${task.id}`}
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-30 inline-flex items-center justify-center rounded-xl border-2 border-indigo-200 bg-gradient-to-r from-indigo-50 to-indigo-100 px-5 py-2.5 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform hover:scale-105 hover:border-indigo-300 hover:bg-gradient-to-r hover:from-indigo-100 hover:to-indigo-200 hover:shadow-md active:scale-95"
-            >
-              <span className="mr-1.5">👁️</span>
-              View Task
-            </Link>
           <button
             type="button"
             onClick={(e) => {
